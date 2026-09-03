@@ -16,8 +16,11 @@
   --negative: #ef4565;
   --negative-muted: #b93750;
   --warning: #f7c948;
+  --warning-muted: #8a6f2a;
+  --info: #94a1b2;
   --chart-grid: #383a40;
   --chart-crosshair: #94a1b2;
+  --chart-volume: #4b4e57;
 }
 
 @theme inline {
@@ -36,8 +39,11 @@
   --color-negative: var(--negative);
   --color-negative-muted: var(--negative-muted);
   --color-warning: var(--warning);
+  --color-warning-muted: var(--warning-muted);
+  --color-info: var(--info);
   --color-chart-grid: var(--chart-grid);
   --color-chart-crosshair: var(--chart-crosshair);
+  --color-chart-volume: var(--chart-volume);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -77,4 +83,51 @@ a {
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+.chaos-dot-field {
+  background-image: radial-gradient(color-mix(in oklab, var(--foreground-muted) 28%, transparent) 1px, transparent 1px);
+  background-size: 18px 18px;
+  mask-image: radial-gradient(ellipse 72% 62% at 48% 42%, #000 22%, transparent 82%);
+}
+
+.chaos-scanlines {
+  background-image: repeating-linear-gradient(180deg, color-mix(in oklab, var(--foreground-muted) 7%, transparent) 0 1px, transparent 1px 5px);
+}
+
+.chaos-lattice {
+  background-image:
+    linear-gradient(115deg, transparent 0 46%, color-mix(in oklab, var(--border-strong) 56%, transparent) 46% 47%, transparent 47% 100%),
+    linear-gradient(65deg, transparent 0 46%, color-mix(in oklab, var(--border) 72%, transparent) 46% 47%, transparent 47% 100%);
+  background-size: 34px 34px;
+}
+
+.chaos-cut {
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+}
+
+.chaos-beam {
+  position: relative;
+  overflow: hidden;
+}
+
+.chaos-beam::after {
+  content: "";
+  position: absolute;
+  inset: -80% auto -80% 0;
+  width: 18%;
+  transform: translateX(-140%) rotate(12deg);
+  background: color-mix(in oklab, var(--primary) 26%, transparent);
+  animation: chaos-beam-sweep 3.8s ease-in-out infinite;
+}
+
+@keyframes chaos-beam-sweep {
+  0%, 22% { transform: translateX(-160%) rotate(12deg); }
+  58%, 100% { transform: translateX(720%) rotate(12deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chaos-beam::after {
+    animation: none;
+  }
 }

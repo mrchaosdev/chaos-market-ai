@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AgentTrace } from "@/components/agent/agent-trace";
 import { ChaosCommand } from "@/components/chaos/chaos-command";
 import { ChaosPanel } from "@/components/chaos/chaos-panel";
+import { ChaosTerminalSurface } from "@/components/chaos/chaos-terminal-surface";
 import { MarketAnalysisPanel } from "@/components/market/market-analysis-panel";
 import type { AnalyzeAssetResult } from "@/lib/workflows/types";
 
@@ -37,29 +38,48 @@ export function AgentWorkflow() {
   }
 
   return (
-    <div className="grid gap-px bg-border xl:grid-cols-[420px_1fr]">
-      <section className="bg-surface p-5 lg:p-8">
-        <div className="mb-5 max-w-2xl">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Chaos Agent</p>
-          <h2 className="mt-2 text-2xl font-semibold">Run market inspection using natural language.</h2>
-        </div>
-        <button className="block w-full text-left" onClick={runAnalysis} type="button">
-          <ChaosCommand value="Analyze BTC on 4H" />
-        </button>
+    <div className="grid gap-px bg-border xl:grid-cols-[450px_1fr]">
+      <section className="bg-background/95 p-5 lg:p-8">
+        <ChaosTerminalSurface>
+          <div className="p-5">
+            <p className="font-mono text-xs uppercase tracking-[0.24em] text-primary">Chaos Agent</p>
+            <h2 className="mt-4 text-4xl font-semibold leading-[0.95] tracking-[-0.06em]">Intent becomes workflow. Workflow becomes evidence.</h2>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">No chat bubbles. No trading. The agent only routes commands into deterministic market inspection.</p>
+          </div>
+          <div className="border-t border-border p-5">
+            <button className="block w-full text-left" onClick={runAnalysis} type="button">
+              <ChaosCommand value="Analyze BTC on 4H" />
+            </button>
+          </div>
+        </ChaosTerminalSurface>
+
         <div className="mt-8">
           <AgentTrace state={state} runId={result?.runId} />
         </div>
       </section>
 
-      <section className="bg-background p-5 lg:p-8">
+      <section className="bg-surface p-5 lg:p-8">
         {result ? (
           <MarketAnalysisPanel result={result} />
         ) : (
-          <ChaosPanel title="No Analysis Selected">
-            <p className="text-sm text-muted-foreground">Run Chaos inspection to retrieve market data, calculate deterministic signals, and produce evidence-first interpretation.</p>
+          <ChaosPanel title="No Analysis Selected" meta="QUEUED">
+            <div className="grid gap-px bg-border md:grid-cols-3">
+              <EmptyStep index="01" label="Market Data" />
+              <EmptyStep index="02" label="Calculation" />
+              <EmptyStep index="03" label="Evidence" />
+            </div>
           </ChaosPanel>
         )}
       </section>
+    </div>
+  );
+}
+
+function EmptyStep({ index, label }: { index: string; label: string }) {
+  return (
+    <div className="bg-background p-4">
+      <p className="font-mono text-xs text-subtle-foreground">{index}</p>
+      <p className="mt-6 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
     </div>
   );
 }
