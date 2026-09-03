@@ -1,0 +1,32 @@
+:root {
+  --palette-bg: #0f0e17;
+  --palette-fg: #fffffe;
+  --palette-muted: #a7a9be;
+  --palette-primary: #ff8906;
+  --palette-secondary: #f25f4c;
+  --palette-tertiary: #e53170;
+
+  --background: var(--palette-bg);
+  --surface: color-mix(in srgb, var(--palette-fg) 3%, var(--palette-bg));
+  --surface-raised: color-mix(in srgb, var(--palette-fg) 6%, var(--palette-bg));
+  --surface-hover: color-mix(in srgb, var(--palette-fg) 9%, var(--palette-bg));
+  --foreground: var(--palette-fg);
+  --foreground-muted: var(--palette-muted);
+  --foreground-subtle: color-mix(in srgb, var(--palette-muted) 68%, var(--palette-bg));
+  --border: color-mix(in srgb, var(--palette-fg) 12%, transparent);
+  --border-strong: color-mix(in srgb, var(--palette-fg) 22%, transparent);
+  --primary: var(--palette-primary);
+  --primary-hover: color-mix(in srgb, var(--palette-primary) 82%, var(--palette-fg));
+  --primary-foreground: var(--palette-bg);
+  --positive: color-mix(in srgb, var(--palette-primary) 72%, var(--palette-fg));
+  --positive-muted: color-mix(in srgb, var(--positive) 62%, var(--palette-bg));
+  --negative: var(--palette-secondary);
+  --negative-muted: color-mix(in srgb, var(--palette-secondary) 62%, var(--palette-bg));
+  --warning: var(--palette-primary);
+  --warning-muted: color-mix(in srgb, var(--palette-primary) 56%, var(--palette-bg));
+  --info: var(--palette-muted);
+  --highlight: var(--palette-tertiary);
+  --chart-grid: var(--border);
+  --chart-crosshair: var(--palette-muted);
+  --chart-volume: color-mix(in srgb, var(--palette-muted) 35%, transparent);
+}

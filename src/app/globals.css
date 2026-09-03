@@ -1,27 +1,5 @@
 @import "tailwindcss";
-
-:root {
-  --background: #16161a;
-  --surface: #242629;
-  --surface-raised: #2d3035;
-  --foreground: #fffffe;
-  --foreground-muted: #94a1b2;
-  --foreground-subtle: #72757e;
-  --border: #383a40;
-  --border-strong: #4b4e57;
-  --primary: #7f5af0;
-  --primary-foreground: #fffffe;
-  --positive: #2cb67d;
-  --positive-muted: #1f8f64;
-  --negative: #ef4565;
-  --negative-muted: #b93750;
-  --warning: #f7c948;
-  --warning-muted: #8a6f2a;
-  --info: #94a1b2;
-  --chart-grid: #383a40;
-  --chart-crosshair: #94a1b2;
-  --chart-volume: #4b4e57;
-}
+@import "../styles/tokens.css";
 
 @theme inline {
   --color-background: var(--background);
@@ -88,7 +66,7 @@ a {
 .chaos-dot-field {
   background-image: radial-gradient(color-mix(in oklab, var(--foreground-muted) 28%, transparent) 1px, transparent 1px);
   background-size: 18px 18px;
-  mask-image: radial-gradient(ellipse 72% 62% at 48% 42%, #000 22%, transparent 82%);
+  mask-image: radial-gradient(ellipse 72% 62% at 48% 42%, var(--foreground) 22%, transparent 82%);
 }
 
 .chaos-scanlines {
