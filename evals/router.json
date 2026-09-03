@@ -1,0 +1,12 @@
+[
+  {
+    "query": "Compare BTC and ETH on 4H",
+    "expectedIntent": "COMPARE_ASSETS",
+    "requiredTools": ["getTicker", "getKlines"]
+  },
+  {
+    "query": "Analyze BTC on 4H",
+    "expectedIntent": "ANALYZE_ASSET",
+    "requiredTools": ["getTicker", "getKlines", "getFundingRate", "getOrderBook"]
+  }
+]

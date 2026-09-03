@@ -1,0 +1,7 @@
+[
+  {
+    "query": "Compare BTC and ETH on 4H",
+    "expectedWorkflow": "CompareAssetsWorkflow",
+    "requiredEvidence": ["BTCUSDT", "ETHUSDT", "relativeStrength"]
+  }
+]

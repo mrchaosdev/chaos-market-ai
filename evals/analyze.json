@@ -1,0 +1,7 @@
+[
+  {
+    "query": "Analyze BTC on 4H",
+    "expectedWorkflow": "AnalyzeAssetWorkflow",
+    "requiredEvidence": ["ticker", "candles", "funding", "indicators", "signal"]
+  }
+]
