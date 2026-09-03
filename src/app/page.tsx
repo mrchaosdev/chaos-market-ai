@@ -3,11 +3,13 @@ import { ChaosField } from "@/components/chaos/chaos-field";
 import { ChaosMetric } from "@/components/chaos/chaos-metric";
 import { ChaosTerminalSurface } from "@/components/chaos/chaos-terminal-surface";
 import { MarketAnalysisPanel } from "@/components/market/market-analysis-panel";
-import { BinanceDemoAdapter } from "@/lib/market/binance/adapter";
+import { createMarketDataProvider } from "@/lib/market/factory";
 import { analyzeAssetWorkflow } from "@/lib/workflows/analyze-asset";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
-  const result = await analyzeAssetWorkflow(new BinanceDemoAdapter(), { symbol: "BTCUSDT", timeframe: "4h" });
+  const result = await analyzeAssetWorkflow(createMarketDataProvider(), { symbol: "BTCUSDT", timeframe: "4h" });
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background text-foreground">

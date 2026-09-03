@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { BinanceDemoAdapter } from "@/lib/market/binance/adapter";
+import { createMarketDataProvider } from "@/lib/market/factory";
 import type { Timeframe } from "@/lib/market/types";
 import { analyzeAssetWorkflow } from "@/lib/workflows/analyze-asset";
 
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "INVALID_TIMEFRAME" }, { status: 400 });
   }
 
-  const provider = new BinanceDemoAdapter();
+  const provider = createMarketDataProvider();
   const result = await analyzeAssetWorkflow(provider, { symbol, timeframe });
 
   return NextResponse.json(result);

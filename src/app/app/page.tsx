@@ -1,11 +1,13 @@
 import { AppShell } from "@/components/layout/app-shell";
 import { MarketAnalysisPanel } from "@/components/market/market-analysis-panel";
 import { MarketWatch } from "@/components/market/market-watch";
-import { BinanceDemoAdapter } from "@/lib/market/binance/adapter";
+import { createMarketDataProvider } from "@/lib/market/factory";
 import { analyzeAssetWorkflow } from "@/lib/workflows/analyze-asset";
 
+export const dynamic = "force-dynamic";
+
 export default async function AppPage() {
-  const result = await analyzeAssetWorkflow(new BinanceDemoAdapter(), { symbol: "BTCUSDT", timeframe: "4h" });
+  const result = await analyzeAssetWorkflow(createMarketDataProvider(), { symbol: "BTCUSDT", timeframe: "4h" });
 
   return (
     <AppShell>
