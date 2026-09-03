@@ -5,6 +5,7 @@
   --color-background: var(--background);
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
+  --color-surface-hover: var(--surface-hover);
   --color-foreground: var(--foreground);
   --color-muted-foreground: var(--foreground-muted);
   --color-subtle-foreground: var(--foreground-subtle);
@@ -19,6 +20,7 @@
   --color-warning: var(--warning);
   --color-warning-muted: var(--warning-muted);
   --color-info: var(--info);
+  --color-highlight: var(--highlight);
   --color-chart-grid: var(--chart-grid);
   --color-chart-crosshair: var(--chart-crosshair);
   --color-chart-volume: var(--chart-volume);

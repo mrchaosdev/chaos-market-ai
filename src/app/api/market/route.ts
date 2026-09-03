@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
+import { chaosErrorResponse } from "@/lib/api/response";
 import { createMarketDataProvider } from "@/lib/market/factory";
 import { marketOverviewWorkflow } from "@/lib/workflows/market-overview";
 
-export async function GET() {
-  const result = await marketOverviewWorkflow(createMarketDataProvider());
+export const dynamic = "force-dynamic";
 
-  return NextResponse.json(result);
+export async function GET() {
+  try {
+    return NextResponse.json(await marketOverviewWorkflow(createMarketDataProvider()));
+  } catch (error) {
+    return chaosErrorResponse(error);
+  }
 }

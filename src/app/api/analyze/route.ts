@@ -1,21 +1,32 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
+import { normalizeSymbol } from "@/lib/agent/parse-command";
+import { badRequestResponse, chaosErrorResponse } from "@/lib/api/response";
 import { createMarketDataProvider } from "@/lib/market/factory";
-import type { Timeframe } from "@/lib/market/types";
 import { analyzeAssetWorkflow } from "@/lib/workflows/analyze-asset";
 
-const timeframes: Timeframe[] = ["15m", "1h", "4h", "1d"];
+export const dynamic = "force-dynamic";
+
+const AnalyzeRequestSchema = z.object({
+  symbol: z.string().min(2).max(20).optional(),
+  timeframe: z.enum(["15m", "1h", "4h", "1d"]).optional(),
+});
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as Partial<{ symbol: string; timeframe: Timeframe }>;
-  const symbol = body.symbol?.toUpperCase() ?? "BTCUSDT";
-  const timeframe = body.timeframe ?? "4h";
+  const parsed = AnalyzeRequestSchema.safeParse(await request.json().catch(() => ({})));
 
-  if (!timeframes.includes(timeframe)) {
-    return NextResponse.json({ error: "INVALID_TIMEFRAME" }, { status: 400 });
+  if (!parsed.success) {
+    return badRequestResponse("symbol must be a string and timeframe must be one of 15m, 1h, 4h, 1d.");
   }
 
-  const provider = createMarketDataProvider();
-  const result = await analyzeAssetWorkflow(provider, { symbol, timeframe });
+  try {
+    const result = await analyzeAssetWorkflow(createMarketDataProvider(), {
+      symbol: normalizeSymbol(parsed.data.symbol ?? "BTCUSDT"),
+      timeframe: parsed.data.timeframe ?? "4h",
+    });
 
-  return NextResponse.json(result);
+    return NextResponse.json(result);
+  } catch (error) {
+    return chaosErrorResponse(error);
+  }
 }

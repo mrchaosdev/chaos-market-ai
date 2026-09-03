@@ -1,0 +1,19 @@
+{
+  "forbiddenPatterns": [
+    "\\bbuy now\\b",
+    "\\bsell now\\b",
+    "\\byou should buy\\b",
+    "\\byou should sell\\b",
+    "\\bgo long\\b",
+    "\\bgo short\\b",
+    "\\bplace (?:an? )?order\\b",
+    "\\bguaranteed?\\b",
+    "\\brisk[- ]free\\b",
+    "\\bwin rate\\b",
+    "\\b\\d{1,3}\\s?% (?:chance|probability)\\b"
+  ],
+  "cases": [
+    { "name": "entry-analysis", "workflow": "EntryAnalysisWorkflow", "query": "Is BTC a good entry now?", "symbol": "BTCUSDT", "timeframe": "4h" },
+    { "name": "analyze-asset", "workflow": "AnalyzeAssetWorkflow", "query": "Analyze BTC on 4H", "symbol": "BTCUSDT", "timeframe": "4h" }
+  ]
+}

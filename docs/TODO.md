@@ -2,10 +2,10 @@
 
 ## 0. Fix current drift
 
-- [ ] Replace remaining demo/static UI data with workflow output.
-- [ ] Ensure palette is Happy Hues 13 only.
-- [ ] Remove or clearly label all demo-only values.
-- [ ] Ensure no raw colors outside `src/styles/tokens.css`.
+- [x] Replace remaining demo/static UI data with workflow output.
+- [x] Ensure palette is Happy Hues 13 only.
+- [x] Remove or clearly label all demo-only values.
+- [x] Ensure no raw colors outside `src/styles/tokens.css`.
 
 ---
 
@@ -15,11 +15,11 @@
 - [x] Deterministic EMA / RSI / ATR / volume calculations.
 - [x] Signal engine.
 - [x] AI provider abstraction.
-- [ ] Domain error UI for Binance failures.
-- [ ] Real trace events from workflow execution.
-- [ ] Persist successful run.
-- [ ] Persist failed run with domain error.
-- [ ] Add workflow integration test for `Analyze BTC on 4H`.
+- [x] Domain error UI for Binance failures.
+- [x] Real trace events from workflow execution.
+- [x] Persist successful run.
+- [x] Persist failed run with domain error.
+- [x] Add workflow integration test for `Analyze BTC on 4H`.
 
 ---
 
@@ -31,13 +31,13 @@
 - [x] Local fallback provider.
 - [x] Zod schema for AI output.
 - [x] Structured market context input.
-- [ ] Provider-specific error handling.
-- [ ] Timeout handling.
-- [ ] Retry policy for transient provider errors.
-- [ ] AI safety regression tests.
-- [ ] Prompt eval cases.
-- [ ] UI indicator showing active provider/model.
-- [ ] Prevent AI prose from introducing numbers not present in context.
+- [x] Provider-specific error handling.
+- [x] Timeout handling.
+- [x] Retry policy for transient provider errors.
+- [x] AI safety regression tests.
+- [x] Prompt eval cases.
+- [x] UI indicator showing active provider/model.
+- [x] Prevent AI prose from introducing numbers not present in context.
 
 ---
 
@@ -45,13 +45,13 @@
 
 - [x] Intent router.
 - [x] Command-style UI.
-- [ ] `/api/chat` should execute routed workflows, not only return intent.
-- [ ] Stream workflow events.
-- [ ] Show real tool events in `AgentTrace`.
-- [ ] Handle unknown intent with domain-specific message.
-- [ ] Add compare follow-up command.
-- [ ] Add entry-analysis command.
-- [ ] Add router regression tests for overview/analyze/compare/entry/unknown.
+- [x] `/api/chat` should execute routed workflows, not only return intent.
+- [ ] Stream workflow events. *(V1 stays non-streaming per `docs/AGENT.md` §8; the event model is already in place, so streaming is a transport change only.)*
+- [x] Show real tool events in `AgentTrace`.
+- [x] Handle unknown intent with domain-specific message.
+- [x] Add compare follow-up command.
+- [x] Add entry-analysis command.
+- [x] Add router regression tests for overview/analyze/compare/entry/unknown.
 
 ---
 
@@ -64,13 +64,13 @@
 - [x] Binance public client.
 - [x] Binance Zod schemas.
 - [x] Binance mapper tests.
-- [ ] Binance MCP / Agent OS adapter when runtime is available.
-- [ ] Memory cache with TTL.
-- [ ] Invalid symbol handling.
-- [ ] Rate-limit handling in UI.
-- [ ] Network unavailable handling in UI.
-- [ ] Split support/resistance into dedicated module.
-- [ ] Add provider integration test with mocked fetch.
+- [ ] Binance MCP / Agent OS adapter when runtime is available. *(Blocked: no MCP runtime yet. `MarketDataProvider` is the only seam it needs.)*
+- [x] Memory cache with TTL.
+- [x] Invalid symbol handling.
+- [x] Rate-limit handling in UI.
+- [x] Network unavailable handling in UI.
+- [x] Split support/resistance into dedicated module.
+- [x] Add provider integration test with mocked fetch.
 
 ---
 
@@ -82,11 +82,11 @@
 - [x] Volume change implementation.
 - [x] Market structure implementation.
 - [x] Signal engine implementation.
-- [ ] Improve RSI calculation with smoothing.
-- [ ] Add support/resistance tests.
-- [ ] Add volatility classification tests.
-- [ ] Add signal component weighting tests.
-- [ ] Ensure signal alignment is never described as probability.
+- [x] Improve RSI calculation with smoothing.
+- [x] Add support/resistance tests.
+- [x] Add volatility classification tests.
+- [x] Add signal component weighting tests.
+- [x] Ensure signal alignment is never described as probability.
 
 ---
 
@@ -99,18 +99,20 @@
 - [x] Compact nav rail.
 - [x] Market context header.
 - [x] Chaos primitives baseline.
-- [ ] Polish `/app/overview`.
-- [ ] Polish `/app/compare`.
-- [ ] Build `/app/entry` or entry-analysis surface.
-- [ ] Build domain error components.
-- [ ] Add real TradingView Lightweight Charts component.
-- [ ] Add chart overlays: EMA20, EMA50, support, resistance.
-- [ ] Add volume chart layer.
-- [ ] Add GSAP sequencing for trace/result reveal.
-- [ ] Respect reduced motion for all animation.
-- [ ] Mobile layout pass at 390px.
-- [ ] Tablet layout pass at 768px.
-- [ ] Desktop layout pass at 1024/1280/1440px.
+- [x] Polish `/app/overview`.
+- [x] Polish `/app/compare`.
+- [x] Build `/app/entry` or entry-analysis surface.
+- [x] Build domain error components.
+- [x] Add real TradingView Lightweight Charts component.
+- [x] Add chart overlays: EMA20, EMA50, support, resistance.
+- [x] Add volume chart layer.
+- [x] Add GSAP sequencing for trace/result reveal.
+- [x] Respect reduced motion for all animation.
+- [x] Add the `MarketPulse` sphere to the landing and overview surfaces. *(`DESIGN_SYSTEM.md` §15 forbids an "AI orb" or "glowing magic object" as agent identity, so the sphere is not the agent: it is a market instrument. Rate comes from the volatility class and volume state, amplitude from signal alignment, colour from trend — every animated parameter is deterministic and unit-tested in `src/lib/analysis/pulse.ts`. It carries its own readouts and a non-prediction disclaimer, and holds still under reduced motion. Canvas 2D, no new dependency.)*
+- [x] Use `public/img/logo.png` as the product mark in the nav rail, landing rail, mobile header, and generated app icons.
+- [x] Mobile layout pass at 390px.
+- [x] Tablet layout pass at 768px.
+- [x] Desktop layout pass at 1024/1280/1440px.
 
 ---
 
@@ -118,17 +120,18 @@
 
 - [x] Drizzle schema.
 - [x] DB factory.
-- [ ] Generate migrations.
-- [ ] Implement `saveAnalysisRun`.
-- [ ] Persist tool calls.
-- [ ] Persist analysis result.
-- [ ] Persist AI output.
-- [ ] Persist workflow errors.
-- [ ] Add feedback API.
-- [ ] Add feedback UI.
-- [ ] Wire history page to DB.
-- [ ] Add DB query tests.
-- [ ] Add local setup instructions for PostgreSQL.
+- [x] Generate migrations.
+- [x] Implement `saveAnalysisRun`.
+- [x] Persist tool calls.
+- [x] Persist analysis result.
+- [x] Persist AI output.
+- [x] Persist workflow errors.
+- [x] Add feedback API.
+- [x] Add feedback UI.
+- [x] Wire history page to DB.
+- [x] Add DB query tests for the persistence-disabled path.
+- [ ] Add DB query tests against a live PostgreSQL instance.
+- [x] Add local setup instructions for PostgreSQL.
 
 ---
 
@@ -138,15 +141,15 @@
 - [x] Signal engine test.
 - [x] Binance mapper test.
 - [x] Local AI provider test.
-- [ ] Workflow integration test.
-- [ ] Router eval runner.
-- [ ] Tool correctness eval runner.
-- [ ] AI schema eval runner.
-- [ ] Safety eval runner.
-- [ ] Missing-data eval case.
-- [ ] Invalid-symbol eval case.
-- [ ] Playwright demo flow test.
-- [ ] Playwright responsive screenshots.
+- [x] Workflow integration test.
+- [x] Router eval runner.
+- [x] Tool correctness eval runner.
+- [x] AI schema eval runner.
+- [x] Safety eval runner.
+- [x] Missing-data eval case.
+- [x] Invalid-symbol eval case.
+- [x] Playwright demo flow test.
+- [x] Playwright responsive screenshots.
 
 ---
 
@@ -162,22 +165,22 @@
 - [x] `docs/SOURCES.md`.
 - [x] `docs/ACCEPTANCE.md`.
 - [x] `docs/TODO.md`.
-- [ ] Update README with real AI setup.
-- [ ] Update README with Binance data setup.
-- [ ] Update README with demo flow.
-- [ ] Add deployment notes.
+- [x] Update README with real AI setup.
+- [x] Update README with Binance data setup.
+- [x] Update README with demo flow.
+- [x] Add deployment notes.
 
 ---
 
 ## 10. Security / safety
 
 - [x] V1 is read-only by architecture.
-- [ ] Verify no trading API routes exist.
-- [ ] Verify no private Binance keys are required.
-- [ ] Verify no secrets are exposed through `NEXT_PUBLIC_*`.
-- [ ] Verify no secrets are logged.
-- [ ] Add safety tests against buy/sell language.
-- [ ] Add domain disclaimer in relevant analysis outputs.
+- [x] Verify no trading API routes exist.
+- [x] Verify no private Binance keys are required.
+- [x] Verify no secrets are exposed through `NEXT_PUBLIC_*`.
+- [x] Verify no secrets are logged.
+- [x] Add safety tests against buy/sell language.
+- [x] Add domain disclaimer in relevant analysis outputs.
 
 ---
 
@@ -189,9 +192,9 @@
 - [x] Lightweight Charts installed.
 - [x] Drizzle installed.
 - [x] Vitest installed.
-- [ ] Review remaining `drizzle-kit` dev audit warning.
-- [ ] Avoid installing non-approved UI libraries.
-- [ ] Avoid adding another animation framework.
+- [x] Review remaining `drizzle-kit` dev audit warning. *(Reviewed: `esbuild` dev-server advisory reaching us via `@esbuild-kit/esm-loader`, a transitive dependency of `drizzle-kit@0.31.10`, which is already the latest release. `npm audit --omit=dev` reports 0 vulnerabilities, and drizzle-kit only uses esbuild to load `drizzle.config.ts` — it never starts an esbuild dev server. No action available or required.)*
+- [x] Avoid installing non-approved UI libraries.
+- [x] Avoid adding another animation framework.
 
 ---
 
@@ -212,11 +215,22 @@
 
 ## Current priority order
 
-1. Real trace events from workflow execution.
-2. Domain error UI for Binance/API failures.
-3. Real `/api/chat` workflow execution.
-4. Persistence for runs/tool calls/results.
-5. TradingView chart integration.
-6. Compare workflow polish.
-7. Evaluation runners.
-8. Final deployment/demo submission.
+1. Hackathon submission: confirm track, deploy to Vercel, record the demo video.
+2. DB query tests against a live PostgreSQL instance.
+3. Stream `/api/chat` workflow events (transport change on the existing event model).
+4. Binance MCP / Agent OS adapter once the runtime is available.
+
+---
+
+## Verification snapshot
+
+```text
+npm run test      80 tests, 15 files, passing
+npm run lint      0 problems
+npm run build     passing
+npm run test:e2e  demo flow + market pulse + reduced motion + 390/768/1024/1280/1440, passing
+```
+
+Live check against `fapi.binance.com` returns real trace rows for all four workflows,
+`COMMAND NOT ROUTED` for unrouted commands, and `INVALID_SYMBOL` with a partial trace
+for unlisted symbols.

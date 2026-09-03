@@ -1,14 +1,54 @@
+import type { AgentTraceEvent } from "@/lib/agent/events";
 import type { MarketDataProvider } from "@/lib/market/provider";
-import { analyzeAssetWorkflow } from "./analyze-asset";
+import type { Timeframe } from "@/lib/market/types";
+import { analyzeAsset, type AssetAnalysis } from "./analyze-asset";
+import { buildWorkflowMeta, createWorkflowContext, toWorkflowFailure, type WorkflowMeta } from "./context";
 
-export async function marketOverviewWorkflow(provider: MarketDataProvider) {
-  const analyses = await Promise.all(["BTCUSDT", "ETHUSDT", "BNBUSDT"].map((symbol) => analyzeAssetWorkflow(provider, { symbol, timeframe: "4h" })));
-  const averageScore = Math.round(analyses.reduce((total, analysis) => total + analysis.signal.score, 0) / analyses.length);
+export const overviewSymbols = ["BTCUSDT", "ETHUSDT", "BNBUSDT"];
 
-  return {
-    runId: `overview_${Date.now().toString(36)}`,
-    regime: averageScore >= 62 ? "Moderately Bullish" : averageScore >= 42 ? "Neutral" : "Defensive",
-    averageScore,
-    analyses,
-  };
+export type MarketRegime = "Moderately Bullish" | "Neutral" | "Defensive";
+
+export type MarketOverviewResult = {
+  runId: string;
+  workflow: "MarketOverviewWorkflow";
+  timeframe: Timeframe;
+  regime: MarketRegime;
+  averageScore: number;
+  analyses: AssetAnalysis[];
+  trace: AgentTraceEvent[];
+  meta: WorkflowMeta;
+};
+
+export async function marketOverviewWorkflow(provider: MarketDataProvider, timeframe: Timeframe = "4h"): Promise<MarketOverviewResult> {
+  const context = createWorkflowContext("MarketOverviewWorkflow", "overview");
+
+  try {
+    const analyses = await Promise.all(overviewSymbols.map((symbol) => analyzeAsset(provider, { symbol, timeframe }, context)));
+    const averageScore = Math.round(analyses.reduce((total, analysis) => total + analysis.signal.score, 0) / analyses.length);
+
+    return {
+      runId: context.recorder.runId,
+      workflow: "MarketOverviewWorkflow",
+      timeframe,
+      regime: getRegime(averageScore),
+      averageScore,
+      analyses,
+      trace: context.recorder.snapshot(),
+      meta: buildWorkflowMeta(context, analyses.some((analysis) => analysis.aiDegraded)),
+    };
+  } catch (error) {
+    throw toWorkflowFailure(error, context);
+  }
+}
+
+function getRegime(averageScore: number): MarketRegime {
+  if (averageScore >= 62) {
+    return "Moderately Bullish";
+  }
+
+  if (averageScore >= 42) {
+    return "Neutral";
+  }
+
+  return "Defensive";
 }

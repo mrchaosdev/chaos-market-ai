@@ -1,0 +1,57 @@
+{
+  "valid": [
+    {
+      "name": "complete-interpretation",
+      "output": {
+        "summary": "BTCUSDT shows bullish structure with 72 / 100 signal alignment.",
+        "bias": "bullish",
+        "observations": ["Price is above EMA20 and EMA50."],
+        "bullishFactors": ["Trend structure is bullish."],
+        "bearishFactors": [],
+        "risks": ["Signal alignment is component agreement, not a probability."],
+        "conclusion": "Market analysis only. Not a trading instruction."
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "unknown-bias",
+      "output": {
+        "summary": "BTCUSDT looks fine.",
+        "bias": "very_bullish",
+        "observations": [],
+        "bullishFactors": [],
+        "bearishFactors": [],
+        "risks": [],
+        "conclusion": "Market analysis only."
+      }
+    },
+    {
+      "name": "missing-conclusion",
+      "output": {
+        "summary": "BTCUSDT looks fine.",
+        "bias": "neutral",
+        "observations": [],
+        "bullishFactors": [],
+        "bearishFactors": [],
+        "risks": []
+      }
+    },
+    {
+      "name": "prose-instead-of-structure",
+      "output": "BTC is bullish, buy now."
+    }
+  ],
+  "hallucinationCases": [
+    {
+      "name": "invented-price",
+      "prose": "BTCUSDT is trading at 129481.55 which is far above the moving averages.",
+      "expectUnsupported": true
+    },
+    {
+      "name": "context-only-numbers",
+      "prose": "Signal alignment is 72 out of 100 and RSI is 61.4.",
+      "expectUnsupported": false
+    }
+  ]
+}

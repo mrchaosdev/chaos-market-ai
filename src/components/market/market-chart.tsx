@@ -1,45 +1,179 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import {
+  CandlestickSeries,
+  ColorType,
+  CrosshairMode,
+  HistogramSeries,
+  LineSeries,
+  LineStyle,
+  createChart,
+  type IChartApi,
+  type UTCTimestamp,
+} from "lightweight-charts";
+import { calculateEMA } from "@/lib/indicators/ema";
+import { resolveToken } from "@/lib/utils/css-color";
 import type { Candle } from "@/lib/market/types";
 
 type MarketChartProps = {
   candles: Candle[];
+  support?: number | null;
+  resistance?: number | null;
+  height?: number;
 };
 
-export function MarketChart({ candles }: MarketChartProps) {
-  const visible = candles.slice(-48);
-  const lows = visible.map((candle) => candle.low);
-  const highs = visible.map((candle) => candle.high);
-  const min = Math.min(...lows);
-  const max = Math.max(...highs);
-  const range = max - min || 1;
+export function MarketChart({ candles, support = null, resistance = null, height = 340 }: MarketChartProps) {
+  const container = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+
+  useEffect(() => {
+    const element = container.current;
+
+    if (!element || candles.length === 0) {
+      return;
+    }
+
+    const palette = readChartPalette(element);
+    const chart = createChart(element, {
+      height,
+      layout: {
+        background: { type: ColorType.Solid, color: palette.background },
+        textColor: palette.muted,
+        fontFamily: getComputedStyle(element).fontFamily,
+        attributionLogo: false,
+      },
+      grid: {
+        vertLines: { color: palette.grid },
+        horzLines: { color: palette.grid },
+      },
+      rightPriceScale: { borderColor: palette.grid },
+      timeScale: { borderColor: palette.grid, timeVisible: true, secondsVisible: false },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+        vertLine: { color: palette.crosshair, labelBackgroundColor: palette.primary },
+        horzLine: { color: palette.crosshair, labelBackgroundColor: palette.primary },
+      },
+    });
+
+    chartRef.current = chart;
+
+    const candleSeries = chart.addSeries(CandlestickSeries, {
+      upColor: palette.positive,
+      downColor: palette.negative,
+      wickUpColor: palette.positiveMuted,
+      wickDownColor: palette.negativeMuted,
+      borderVisible: false,
+    });
+
+    candleSeries.setData(
+      candles.map((candle) => ({
+        time: toChartTime(candle.timestamp),
+        open: candle.open,
+        high: candle.high,
+        low: candle.low,
+        close: candle.close,
+      })),
+    );
+
+    const volumeSeries = chart.addSeries(HistogramSeries, { priceFormat: { type: "volume" }, priceScaleId: "volume", color: palette.volume });
+    chart.priceScale("volume").applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });
+    volumeSeries.setData(
+      candles.map((candle) => ({
+        time: toChartTime(candle.timestamp),
+        value: candle.volume,
+        color: candle.close >= candle.open ? palette.positiveMuted : palette.negativeMuted,
+      })),
+    );
+
+    addEmaSeries(chart, candles, 20, palette.primary);
+    addEmaSeries(chart, candles, 50, palette.highlight);
+
+    if (support !== null) {
+      candleSeries.createPriceLine({ price: support, color: palette.positive, lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: "SUPPORT" });
+    }
+
+    if (resistance !== null) {
+      candleSeries.createPriceLine({ price: resistance, color: palette.negative, lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: "RESISTANCE" });
+    }
+
+    chart.timeScale().fitContent();
+
+    const observer = new ResizeObserver(([entry]) => chart.applyOptions({ width: entry.contentRect.width }));
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+      chart.remove();
+      chartRef.current = null;
+    };
+  }, [candles, support, resistance, height]);
 
   return (
-    <div className="chaos-cut relative h-80 overflow-hidden border border-border bg-background p-4">
-      <div className="chaos-lattice absolute inset-0 opacity-25" />
-      <div className="relative flex h-full items-end gap-1 border-b border-l border-chart-grid px-3 pb-3">
-        <div className="absolute left-3 right-0 top-1/4 h-px bg-border" />
-        <div className="absolute left-3 right-0 top-1/2 h-px bg-border" />
-        <div className="absolute left-3 right-0 top-3/4 h-px bg-border" />
-        {visible.map((candle) => {
-          const wickHeight = ((candle.high - candle.low) / range) * 100;
-          const wickOffset = ((candle.low - min) / range) * 100;
-          const bodyHeight = (Math.abs(candle.close - candle.open) / range) * 100;
-          const bodyOffset = ((Math.min(candle.open, candle.close) - min) / range) * 100;
-          const positive = candle.close >= candle.open;
-
-          return (
-            <div className="relative h-full flex-1" key={candle.timestamp}>
-              <div
-                className={positive ? "absolute left-1/2 w-px -translate-x-1/2 bg-positive-muted" : "absolute left-1/2 w-px -translate-x-1/2 bg-negative-muted"}
-                style={{ bottom: `${wickOffset}%`, height: `${Math.max(wickHeight, 3)}%` }}
-              />
-              <div
-                className={positive ? "absolute w-full bg-positive" : "absolute w-full bg-negative"}
-                style={{ bottom: `${bodyOffset}%`, height: `${Math.max(bodyHeight, 2)}%` }}
-              />
-            </div>
-          );
-        })}
+    <div className="border border-border bg-background">
+      <div className="flex flex-wrap items-center gap-4 border-b border-border px-4 py-2">
+        <Legend label="EMA20" tone="primary" />
+        <Legend label="EMA50" tone="highlight" />
+        <Legend label="Support" tone="positive" />
+        <Legend label="Resistance" tone="negative" />
+        <span className="ml-auto font-mono text-[11px] uppercase tracking-[0.16em] text-subtle-foreground">Volume overlay</span>
       </div>
+      <div className="w-full" ref={container} style={{ height }} />
     </div>
   );
+}
+
+function Legend({ label, tone }: { label: string; tone: "primary" | "highlight" | "positive" | "negative" }) {
+  const toneClass = {
+    primary: "bg-primary",
+    highlight: "bg-highlight",
+    positive: "bg-positive",
+    negative: "bg-negative",
+  }[tone];
+
+  return (
+    <span className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+      <span className={`inline-block h-px w-4 ${toneClass}`} />
+      {label}
+    </span>
+  );
+}
+
+function addEmaSeries(chart: IChartApi, candles: Candle[], period: number, color: string) {
+  if (candles.length < period) {
+    return;
+  }
+
+  const values = calculateEMA(
+    candles.map((candle) => candle.close),
+    period,
+  );
+  const series = chart.addSeries(LineSeries, { color, lineWidth: 1, priceLineVisible: false, lastValueVisible: false });
+
+  series.setData(
+    candles.slice(period - 1).map((candle, index) => ({
+      time: toChartTime(candle.timestamp),
+      value: values[index + period - 1],
+    })),
+  );
+}
+
+function toChartTime(timestamp: number) {
+  return Math.floor(timestamp / 1000) as UTCTimestamp;
+}
+
+function readChartPalette(element: HTMLElement) {
+  return {
+    background: resolveToken(element, "--background"),
+    grid: resolveToken(element, "--chart-grid"),
+    crosshair: resolveToken(element, "--chart-crosshair"),
+    muted: resolveToken(element, "--foreground-muted"),
+    primary: resolveToken(element, "--primary"),
+    highlight: resolveToken(element, "--highlight"),
+    positive: resolveToken(element, "--positive"),
+    positiveMuted: resolveToken(element, "--positive-muted"),
+    negative: resolveToken(element, "--negative"),
+    negativeMuted: resolveToken(element, "--negative-muted"),
+    volume: resolveToken(element, "--chart-volume"),
+  };
 }

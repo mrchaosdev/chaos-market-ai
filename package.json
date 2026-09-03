@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "test:e2e": "node tests/e2e/demo-flow.e2e.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.49",

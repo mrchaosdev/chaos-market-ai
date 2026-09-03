@@ -1,17 +1,42 @@
+import { ChaosDomainError } from "@/components/chaos/chaos-domain-error";
 import { AppShell } from "@/components/layout/app-shell";
 import { MarketAnalysisPanel } from "@/components/market/market-analysis-panel";
+import { WorkflowMetaBar } from "@/components/market/workflow-meta-bar";
+import { normalizeSymbol } from "@/lib/agent/parse-command";
 import { createMarketDataProvider } from "@/lib/market/factory";
+import type { Timeframe } from "@/lib/market/types";
 import { analyzeAssetWorkflow } from "@/lib/workflows/analyze-asset";
+import { runSafely } from "@/lib/workflows/safe-run";
 
 export const dynamic = "force-dynamic";
 
-export default async function AnalyzePage() {
-  const result = await analyzeAssetWorkflow(createMarketDataProvider(), { symbol: "BTCUSDT", timeframe: "4h" });
+const timeframes: Timeframe[] = ["15m", "1h", "4h", "1d"];
+
+type AnalyzePageProps = {
+  searchParams: Promise<{ symbol?: string; timeframe?: string }>;
+};
+
+export default async function AnalyzePage({ searchParams }: AnalyzePageProps) {
+  const params = await searchParams;
+  const symbol = normalizeSymbol(params.symbol ?? "BTCUSDT");
+  const timeframe = timeframes.find((value) => value === params.timeframe) ?? "4h";
+  const outcome = await runSafely(() => analyzeAssetWorkflow(createMarketDataProvider(), { symbol, timeframe }));
+
+  if (!outcome.ok) {
+    return (
+      <AppShell>
+        <section className="bg-background p-5 lg:p-8">
+          <ChaosDomainError error={outcome.error} runId={outcome.runId} />
+        </section>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell>
-      <section className="bg-background p-5 lg:p-8">
-        <MarketAnalysisPanel result={result} />
+      <section className="space-y-4 bg-background p-5 lg:p-8">
+        <WorkflowMetaBar meta={outcome.data.meta} runId={outcome.data.runId} workflow={outcome.data.workflow} />
+        <MarketAnalysisPanel analysis={outcome.data} />
       </section>
     </AppShell>
   );

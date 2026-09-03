@@ -1,15 +1,44 @@
+import type { AgentTraceEvent } from "@/lib/agent/events";
+import { compareSignals, type ComparisonResult } from "@/lib/analysis/comparison";
 import type { MarketDataProvider } from "@/lib/market/provider";
 import type { Timeframe } from "@/lib/market/types";
-import { analyzeAssetWorkflow } from "./analyze-asset";
+import { analyzeAsset, type AssetAnalysis } from "./analyze-asset";
+import { buildWorkflowMeta, createWorkflowContext, toWorkflowFailure, type WorkflowMeta } from "./context";
 
-export async function compareAssetsWorkflow(provider: MarketDataProvider, symbols: string[], timeframe: Timeframe) {
-  const analyses = await Promise.all(symbols.map((symbol) => analyzeAssetWorkflow(provider, { symbol, timeframe })));
-  const [leader] = [...analyses].sort((a, b) => b.signal.score - a.signal.score);
+export type CompareAssetsResult = {
+  runId: string;
+  workflow: "CompareAssetsWorkflow";
+  timeframe: Timeframe;
+  analyses: AssetAnalysis[];
+  comparison: ComparisonResult;
+  relativeStrength: string | null;
+  trace: AgentTraceEvent[];
+  meta: WorkflowMeta;
+};
 
-  return {
-    runId: `compare_${Date.now().toString(36)}`,
-    timeframe,
-    analyses,
-    relativeStrength: leader.market.ticker.symbol,
-  };
+export async function compareAssetsWorkflow(provider: MarketDataProvider, symbols: string[], timeframe: Timeframe): Promise<CompareAssetsResult> {
+  const context = createWorkflowContext("CompareAssetsWorkflow", "compare");
+
+  try {
+    const analyses = await Promise.all(symbols.map((symbol) => analyzeAsset(provider, { symbol, timeframe }, context)));
+
+    const comparison = await context.recorder.track(
+      { phase: "signal", toolName: "comparisonEngine", inputSummary: symbols.join(" / ") },
+      () => compareSignals(analyses.map((analysis) => ({ symbol: analysis.symbol, signal: analysis.signal }))),
+      { summarize: (value) => `relative strength ${value.relativeStrength ?? "tied"}`, errorCode: "ANALYTICS_ERROR" },
+    );
+
+    return {
+      runId: context.recorder.runId,
+      workflow: "CompareAssetsWorkflow",
+      timeframe,
+      analyses,
+      comparison,
+      relativeStrength: comparison.relativeStrength,
+      trace: context.recorder.snapshot(),
+      meta: buildWorkflowMeta(context, analyses.some((analysis) => analysis.aiDegraded)),
+    };
+  } catch (error) {
+    throw toWorkflowFailure(error, context);
+  }
 }

@@ -1,15 +1,15 @@
-import type { AIProvider } from "./provider";
+import type { AIProvider, AIProviderName } from "./provider";
 import { createAnthropicProvider } from "./providers/anthropic";
 import { createGeminiProvider } from "./providers/gemini";
 import { LocalProvider } from "./providers/local";
 import { createOpenAIProvider } from "./providers/openai";
 
-export type AIProviderName = "local" | "openai" | "gemini" | "anthropic";
+export type { AIProviderName } from "./provider";
 
 export function createAIProvider(): AIProvider {
   const provider = parseProvider(process.env.AI_PROVIDER);
   const apiKey = process.env.AI_API_KEY;
-  const model = process.env.AI_MODEL;
+  const model = process.env.AI_MODEL || undefined;
 
   if (!apiKey || provider === "local") {
     return new LocalProvider();
@@ -23,10 +23,10 @@ export function createAIProvider(): AIProvider {
     return createGeminiProvider(apiKey, model);
   }
 
-  if (provider === "anthropic") {
-    return createAnthropicProvider(apiKey, model);
-  }
+  return createAnthropicProvider(apiKey, model);
+}
 
+export function createFallbackAIProvider(): AIProvider {
   return new LocalProvider();
 }
 

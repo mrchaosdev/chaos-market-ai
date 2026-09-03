@@ -1,0 +1,40 @@
+"use client";
+
+import { Terminal } from "lucide-react";
+
+type ChaosCommandInputProps = {
+  value: string;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
+};
+
+export function ChaosCommandInput({ value, disabled = false, onChange, onSubmit }: ChaosCommandInputProps) {
+  return (
+    <form
+      className="flex items-center gap-3 border border-border bg-background px-4 py-3 font-mono text-sm focus-within:border-border-strong"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
+    >
+      <Terminal aria-hidden className="size-4 shrink-0 text-primary" />
+      <input
+        aria-label="Agent command"
+        className="min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-subtle-foreground"
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="Analyze BTC on 4H"
+        spellCheck={false}
+        value={value}
+      />
+      <button
+        className="shrink-0 border border-border-strong px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:bg-surface-hover disabled:opacity-50"
+        disabled={disabled || value.trim().length === 0}
+        type="submit"
+      >
+        {disabled ? "Running" : "Enter"}
+      </button>
+    </form>
+  );
+}

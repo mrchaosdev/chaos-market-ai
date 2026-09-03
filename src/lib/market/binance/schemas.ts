@@ -37,3 +37,8 @@ export const BinanceKlineSchema = z.tuple([
 ]);
 
 export const BinanceKlinesSchema = z.array(BinanceKlineSchema);
+
+export const BinanceErrorSchema = z.object({
+  code: z.number(),
+  msg: z.string(),
+});

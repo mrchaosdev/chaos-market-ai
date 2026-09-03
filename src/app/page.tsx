@@ -1,22 +1,30 @@
 import { AgentTrace } from "@/components/agent/agent-trace";
+import { ChaosDomainError } from "@/components/chaos/chaos-domain-error";
 import { ChaosField } from "@/components/chaos/chaos-field";
+import { ChaosLogo } from "@/components/chaos/chaos-logo";
 import { ChaosMetric } from "@/components/chaos/chaos-metric";
 import { ChaosTerminalSurface } from "@/components/chaos/chaos-terminal-surface";
 import { MarketAnalysisPanel } from "@/components/market/market-analysis-panel";
+import { MarketPulse } from "@/components/market/market-pulse";
 import { createMarketDataProvider } from "@/lib/market/factory";
 import { analyzeAssetWorkflow } from "@/lib/workflows/analyze-asset";
+import { runSafely } from "@/lib/workflows/safe-run";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const result = await analyzeAssetWorkflow(createMarketDataProvider(), { symbol: "BTCUSDT", timeframe: "4h" });
+  const outcome = await runSafely(() => analyzeAssetWorkflow(createMarketDataProvider(), { symbol: "BTCUSDT", timeframe: "4h" }));
+  const result = outcome.ok ? outcome.data : null;
+  const error = outcome.ok ? null : outcome.error;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <ChaosField />
       <div className="relative grid min-h-screen grid-cols-1 lg:grid-cols-[72px_1fr]">
         <aside className="hidden border-r border-border bg-background/90 lg:grid lg:grid-rows-[96px_1fr_120px]">
-          <div className="grid place-items-center border-b border-border font-mono text-xs font-semibold tracking-[0.28em] text-primary">CM</div>
+          <div className="grid place-items-center border-b border-border">
+            <ChaosLogo size={34} />
+          </div>
           <nav className="grid place-items-center py-8 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground [writing-mode:vertical-rl]">
             <div className="flex gap-8">
               <span>Data</span>
@@ -39,7 +47,7 @@ export default async function Home() {
             <div className="grid grid-cols-3 gap-px bg-border">
               <ChaosMetric label="Track" value="A / B" />
               <ChaosMetric label="Deadline" value="SEP 08" />
-              <ChaosMetric label="Signal" value={`${result.signal.score}/100`} />
+              <ChaosMetric label="Signal" value={result ? `${result.signal.score}/100` : "UNAVAILABLE"} />
             </div>
           </header>
 
@@ -74,16 +82,23 @@ export default async function Home() {
               </div>
 
               <div className="mt-12" id="product">
-                <MarketAnalysisPanel result={result} />
+                {result ? <MarketAnalysisPanel analysis={result} /> : null}
+                {error ? <ChaosDomainError error={error} /> : null}
               </div>
             </section>
 
             <section className="bg-surface p-5 lg:p-8">
-              <AgentTrace state="complete" runId={result.runId} />
-              <div className="mt-8 border border-border bg-background p-5">
-                <p className="font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">Demo Ending</p>
-                <p className="mt-6 text-3xl font-semibold leading-tight tracking-[-0.04em]">Live data. Deterministic signals. AI reasoning.</p>
-              </div>
+              {result ? (
+                <div className="mb-8">
+                  <MarketPulse
+                    signalScore={result.signal.score}
+                    trend={result.structure.trend}
+                    volatility={result.structure.volatility}
+                    volume={result.structure.volume}
+                  />
+                </div>
+              ) : null}
+              <AgentTrace events={result?.trace ?? []} isRunning={false} runId={result?.runId ?? null} />
             </section>
           </div>
         </section>

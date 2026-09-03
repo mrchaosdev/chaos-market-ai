@@ -1,94 +1,97 @@
+"use client";
+
+import { useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import type { AgentTraceEvent, TracePhase } from "@/lib/agent/events";
+import { ChaosStatus } from "@/components/chaos/chaos-status";
+
 type AgentTraceProps = {
-  state?: "idle" | "running" | "complete" | "error";
-  runId?: string;
+  events: AgentTraceEvent[];
+  runId: string | null;
+  isRunning: boolean;
 };
 
-type AgentTraceRow = {
-  id: string;
-  task: string;
-  source: string;
-  latency: string;
-  state: "DONE" | "RUNNING" | "QUEUED" | "ERROR";
+const phaseLabels: Record<TracePhase, string> = {
+  intent: "Intent",
+  market_data: "Market Data",
+  analytics: "Analytics",
+  signal: "Signal",
+  ai: "Reasoning",
+  persistence: "Persistence",
 };
 
-export function AgentTrace({ state = "complete", runId = "run_demo" }: AgentTraceProps) {
-  const traceRows = getTraceRows(state);
+const phaseOrder: TracePhase[] = ["intent", "market_data", "analytics", "signal", "ai", "persistence"];
+
+export function AgentTrace({ events, runId, isRunning }: AgentTraceProps) {
+  const container = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      const media = gsap.matchMedia();
+
+      media.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.from("[data-trace-row]", { opacity: 0, x: -8, duration: 0.28, stagger: 0.04, ease: "power2.out" });
+      });
+
+      return () => media.revert();
+    },
+    { scope: container, dependencies: [events.length, runId] },
+  );
+
+  const groups = phaseOrder
+    .map((phase) => ({ phase, rows: events.filter((event) => event.phase === phase) }))
+    .filter((group) => group.rows.length > 0);
 
   return (
-    <div className="border border-border bg-background">
-      <div className="flex items-center justify-between border-b border-border p-4">
+    <div className="border border-border bg-background" ref={container}>
+      <div className="flex items-center justify-between gap-3 border-b border-border p-4">
         <div>
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Chaos / {runId}</p>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Chaos / {runId ?? "no run"}</p>
           <h3 className="mt-2 text-xl font-semibold">Agent execution stream</h3>
         </div>
-        <span className="border border-primary px-2 py-1 font-mono text-[11px] text-primary">{state === "running" ? "RUNNING" : "READ ONLY"}</span>
+        <span className="border border-primary px-2 py-1 font-mono text-[11px] uppercase text-primary">{isRunning ? "Running" : "Read only"}</span>
       </div>
 
-      <div className="divide-y divide-border">
-        {traceRows.map((row) => (
-          <div className="grid grid-cols-[34px_1fr] gap-3 p-4 md:grid-cols-[34px_1fr_90px_70px_82px]" key={row.id}>
-            <span className="font-mono text-xs text-subtle-foreground">{row.id}</span>
-            <span className="text-sm">{row.task}</span>
-            <span className="font-mono text-[11px] text-muted-foreground">{row.source}</span>
-            <span className="font-mono text-[11px] text-muted-foreground tabular">{row.latency}</span>
-            <span className={getStateClassName(row.state)}>{row.state}</span>
-          </div>
-        ))}
-      </div>
+      {events.length === 0 ? (
+        <p className="p-4 text-sm text-muted-foreground">
+          {isRunning ? "Workflow started. Trace rows appear as real steps complete." : "No workflow has been executed in this session yet."}
+        </p>
+      ) : (
+        <div className="divide-y divide-border">
+          {groups.map((group) => (
+            <div key={group.phase}>
+              <p className="bg-surface px-4 py-2 font-mono text-[11px] uppercase tracking-[0.2em] text-subtle-foreground">{phaseLabels[group.phase]}</p>
+              <div className="divide-y divide-border">
+                {group.rows.map((event) => (
+                  <TraceRow event={event} key={`${event.id}-${event.toolName ?? event.phase}-${event.createdAt}`} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-function getTraceRows(state: AgentTraceProps["state"]): AgentTraceRow[] {
-  if (state === "idle") {
-    return [
-      { id: "01", task: "Input command", source: "AGENT", latency: "", state: "QUEUED" },
-      { id: "02", task: "Market data", source: "BINANCE", latency: "", state: "QUEUED" },
-      { id: "03", task: "Indicators", source: "ENGINE", latency: "", state: "QUEUED" },
-      { id: "04", task: "Signal alignment", source: "ENGINE", latency: "", state: "QUEUED" },
-      { id: "05", task: "Interpretation", source: "AI", latency: "", state: "QUEUED" },
-    ];
-  }
-
-  if (state === "running") {
-    return [
-      { id: "01", task: "Input understood", source: "AGENT", latency: "", state: "DONE" },
-      { id: "02", task: "BTC ticker / candles / funding", source: "BINANCE", latency: "", state: "RUNNING" },
-      { id: "03", task: "EMA / RSI / ATR", source: "ENGINE", latency: "", state: "QUEUED" },
-      { id: "04", task: "Signal alignment", source: "ENGINE", latency: "", state: "QUEUED" },
-      { id: "05", task: "Evidence interpretation", source: "AI", latency: "", state: "QUEUED" },
-    ];
-  }
-
-  if (state === "error") {
-    return [
-      { id: "01", task: "Input understood", source: "AGENT", latency: "", state: "DONE" },
-      { id: "02", task: "BTC market data", source: "BINANCE", latency: "", state: "ERROR" },
-      { id: "03", task: "Analysis halted", source: "WORKFLOW", latency: "", state: "QUEUED" },
-    ];
-  }
-
-  return [
-    { id: "01", task: "Input understood", source: "AGENT", latency: "", state: "DONE" },
-    { id: "02", task: "BTC ticker / candles / funding", source: "BINANCE", latency: "", state: "DONE" },
-    { id: "03", task: "EMA / RSI / ATR", source: "ENGINE", latency: "", state: "DONE" },
-    { id: "04", task: "Signal alignment", source: "ENGINE", latency: "", state: "DONE" },
-    { id: "05", task: "Evidence interpretation", source: "AI", latency: "", state: "DONE" },
-  ];
-}
-
-function getStateClassName(state: AgentTraceRow["state"]) {
-  if (state === "DONE") {
-    return "font-mono text-[11px] text-positive";
-  }
-
-  if (state === "RUNNING") {
-    return "font-mono text-[11px] text-primary";
-  }
-
-  if (state === "ERROR") {
-    return "font-mono text-[11px] text-negative";
-  }
-
-  return "font-mono text-[11px] text-muted-foreground";
+function TraceRow({ event }: { event: AgentTraceEvent }) {
+  return (
+    <div className="p-4" data-trace-row>
+      <div className="flex items-center gap-3">
+        <span className="w-6 shrink-0 font-mono text-xs text-subtle-foreground">{event.id}</span>
+        <span className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">{event.toolName ?? phaseLabels[event.phase]}</span>
+        {event.latencyMs === undefined ? null : (
+          <span className="shrink-0 font-mono text-[11px] text-muted-foreground tabular">{event.latencyMs}ms</span>
+        )}
+        <ChaosStatus status={event.status} />
+      </div>
+      {event.inputSummary || event.outputSummary ? (
+        <p className="mt-2 pl-9 text-xs leading-5 text-muted-foreground">
+          {event.inputSummary ? <span className="text-subtle-foreground">{event.inputSummary} · </span> : null}
+          {event.outputSummary ?? ""}
+        </p>
+      ) : null}
+    </div>
+  );
 }

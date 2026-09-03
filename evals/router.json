@@ -1,12 +1,74 @@
 [
   {
-    "query": "Compare BTC and ETH on 4H",
-    "expectedIntent": "COMPARE_ASSETS",
-    "requiredTools": ["getTicker", "getKlines"]
+    "query": "How is the market today?",
+    "expectedIntent": "MARKET_OVERVIEW",
+    "expectedWorkflow": "MarketOverviewWorkflow",
+    "requiredTools": ["getTicker", "getKlines", "getFundingRate", "getOrderBook"]
+  },
+  {
+    "query": "Give me a market overview",
+    "expectedIntent": "MARKET_OVERVIEW",
+    "expectedWorkflow": "MarketOverviewWorkflow",
+    "requiredTools": ["getTicker", "getKlines", "getFundingRate", "getOrderBook"]
   },
   {
     "query": "Analyze BTC on 4H",
     "expectedIntent": "ANALYZE_ASSET",
+    "expectedWorkflow": "AnalyzeAssetWorkflow",
+    "expectedSymbols": ["BTCUSDT"],
+    "expectedTimeframe": "4h",
     "requiredTools": ["getTicker", "getKlines", "getFundingRate", "getOrderBook"]
+  },
+  {
+    "query": "Inspect ETH on 1h",
+    "expectedIntent": "ANALYZE_ASSET",
+    "expectedWorkflow": "AnalyzeAssetWorkflow",
+    "expectedSymbols": ["ETHUSDT"],
+    "expectedTimeframe": "1h",
+    "requiredTools": ["getTicker", "getKlines", "getFundingRate", "getOrderBook"]
+  },
+  {
+    "query": "Compare BTC and ETH on 4H",
+    "expectedIntent": "COMPARE_ASSETS",
+    "expectedWorkflow": "CompareAssetsWorkflow",
+    "expectedSymbols": ["BTCUSDT", "ETHUSDT"],
+    "expectedTimeframe": "4h",
+    "requiredTools": ["getTicker", "getKlines", "getFundingRate", "getOrderBook"]
+  },
+  {
+    "query": "BNB vs SOL daily",
+    "expectedIntent": "COMPARE_ASSETS",
+    "expectedWorkflow": "CompareAssetsWorkflow",
+    "expectedSymbols": ["BNBUSDT", "SOLUSDT"],
+    "expectedTimeframe": "1d",
+    "requiredTools": ["getTicker", "getKlines", "getFundingRate", "getOrderBook"]
+  },
+  {
+    "query": "Is BTC near a good entry area?",
+    "expectedIntent": "ENTRY_ANALYSIS",
+    "expectedWorkflow": "EntryAnalysisWorkflow",
+    "expectedSymbols": ["BTCUSDT"],
+    "expectedTimeframe": "4h",
+    "requiredTools": ["getTicker", "getKlines", "getFundingRate", "getOrderBook"]
+  },
+  {
+    "query": "Show me the entry structure for ETH on 15m",
+    "expectedIntent": "ENTRY_ANALYSIS",
+    "expectedWorkflow": "EntryAnalysisWorkflow",
+    "expectedSymbols": ["ETHUSDT"],
+    "expectedTimeframe": "15m",
+    "requiredTools": ["getTicker", "getKlines", "getFundingRate", "getOrderBook"]
+  },
+  {
+    "query": "Tell me a joke",
+    "expectedIntent": "UNKNOWN",
+    "expectedWorkflow": null,
+    "requiredTools": []
+  },
+  {
+    "query": "What is the weather in Hanoi?",
+    "expectedIntent": "UNKNOWN",
+    "expectedWorkflow": null,
+    "requiredTools": []
   }
 ]

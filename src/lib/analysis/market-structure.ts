@@ -1,4 +1,5 @@
 import type { Candle } from "@/lib/market/types";
+import { calculateSupportResistance } from "./support-resistance";
 
 export type MarketStructure = {
   trend: "bullish" | "bearish" | "neutral";
@@ -18,16 +19,15 @@ export function calculateMarketStructure(input: {
   volumeChange: number | null;
 }): MarketStructure {
   const currentPrice = input.candles.at(-1)?.close ?? null;
-  const support = getSupport(input.candles);
-  const resistance = getResistance(input.candles);
+  const levels = calculateSupportResistance(input.candles);
 
   return {
     trend: getTrend(currentPrice, input.ema20, input.ema50),
     momentum: getMomentum(input.rsi),
     volatility: getVolatility(currentPrice, input.atr),
     volume: getVolume(input.volumeChange),
-    support,
-    resistance,
+    support: levels.support,
+    resistance: levels.resistance,
   };
 }
 
@@ -95,14 +95,4 @@ function getVolume(volumeChange: number | null): MarketStructure["volume"] {
   }
 
   return "stable";
-}
-
-function getSupport(candles: Candle[]) {
-  const lows = candles.slice(-30).map((candle) => candle.low);
-  return lows.length === 0 ? null : Math.min(...lows);
-}
-
-function getResistance(candles: Candle[]) {
-  const highs = candles.slice(-30).map((candle) => candle.high);
-  return highs.length === 0 ? null : Math.max(...highs);
 }

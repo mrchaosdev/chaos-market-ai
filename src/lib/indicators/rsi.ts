@@ -3,23 +3,34 @@ export function calculateRSI(values: number[], period = 14): number | null {
     return null;
   }
 
-  let gains = 0;
-  let losses = 0;
+  let averageGain = 0;
+  let averageLoss = 0;
 
-  for (let index = values.length - period; index < values.length; index += 1) {
+  for (let index = 1; index <= period; index += 1) {
     const delta = values[index] - values[index - 1];
 
     if (delta >= 0) {
-      gains += delta;
+      averageGain += delta;
     } else {
-      losses += Math.abs(delta);
+      averageLoss += Math.abs(delta);
     }
   }
 
-  if (losses === 0) {
-    return 100;
+  averageGain /= period;
+  averageLoss /= period;
+
+  for (let index = period + 1; index < values.length; index += 1) {
+    const delta = values[index] - values[index - 1];
+    const gain = delta > 0 ? delta : 0;
+    const loss = delta < 0 ? Math.abs(delta) : 0;
+
+    averageGain = (averageGain * (period - 1) + gain) / period;
+    averageLoss = (averageLoss * (period - 1) + loss) / period;
   }
 
-  const relativeStrength = gains / period / (losses / period);
-  return 100 - 100 / (1 + relativeStrength);
+  if (averageLoss === 0) {
+    return averageGain === 0 ? 50 : 100;
+  }
+
+  return 100 - 100 / (1 + averageGain / averageLoss);
 }

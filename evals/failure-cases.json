@@ -1,0 +1,30 @@
+[
+  {
+    "name": "missing-market-data",
+    "description": "Binance klines endpoint is unavailable, so the workflow must stop before interpretation.",
+    "failOn": "getKlines",
+    "expectedCode": "BINANCE_UNAVAILABLE",
+    "expectAiPhase": false
+  },
+  {
+    "name": "invalid-symbol",
+    "description": "An unlisted symbol must produce INVALID_SYMBOL rather than a generic failure.",
+    "failOn": "getTicker",
+    "expectedCode": "INVALID_SYMBOL",
+    "expectAiPhase": false
+  },
+  {
+    "name": "rate-limited",
+    "description": "Binance rate limiting must surface as its own domain error.",
+    "failOn": "getFundingRate",
+    "expectedCode": "RATE_LIMIT",
+    "expectAiPhase": false
+  },
+  {
+    "name": "insufficient-history",
+    "description": "Fewer than fifty candles cannot produce EMA50, so analytics must fail loudly.",
+    "candles": 30,
+    "expectedCode": "ANALYTICS_ERROR",
+    "expectAiPhase": false
+  }
+]
