@@ -1,3 +1,5 @@
+import { createAIProvider } from "@/lib/ai/factory";
+import type { AnalysisContext } from "@/lib/ai/types";
 import { calculateMarketStructure } from "@/lib/analysis/market-structure";
 import { calculateSignalScore } from "@/lib/analysis/signal-engine";
 import { calculateATR, calculateEMA, calculateRSI, calculateVolumeChange } from "@/lib/indicators";
@@ -28,6 +30,30 @@ export async function analyzeAssetWorkflow(provider: MarketDataProvider, input: 
   const ema50 = ema50Series.at(-1) ?? null;
   const structure = calculateMarketStructure({ candles, ema20, ema50, rsi, atr, volumeChange });
   const signal = calculateSignalScore({ structure, funding, orderBook });
+  const aiContext: AnalysisContext = {
+    symbol: input.symbol,
+    timeframe: input.timeframe,
+    market: {
+      price: ticker.price,
+      change24hPercent: ticker.change24hPercent,
+      volume24h: ticker.volume24h,
+    },
+    structure,
+    indicators: {
+      rsi,
+      ema20,
+      ema50,
+      atr,
+    },
+    funding: {
+      rate: funding.rate,
+    },
+    signal: {
+      score: signal.score,
+      bias: signal.bias,
+    },
+  };
+  const ai = await createAIProvider().analyze(aiContext);
 
   return {
     runId: `run_${Date.now().toString(36)}`,
@@ -46,15 +72,6 @@ export async function analyzeAssetWorkflow(provider: MarketDataProvider, input: 
     },
     structure,
     signal,
-    ai: {
-      summary: "BTC maintains a constructive 4H structure based on deterministic signal alignment.",
-      observations: [
-        "Observed market data was retrieved before interpretation.",
-        "Indicators were calculated in TypeScript, not by AI.",
-        "Signal alignment is not a probability forecast.",
-      ],
-      risks: ["Price is near the current resistance band.", "Momentum can fade if volume expansion weakens."],
-      conclusion: "Market analysis only. Not a trading instruction.",
-    },
+    ai,
   };
 }
