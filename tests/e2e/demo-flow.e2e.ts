@@ -15,11 +15,13 @@ async function main() {
   try {
     await checkDemoFlow(browser);
     await checkStreamingTransport(browser);
+    await checkScrollbar(browser);
+    await checkStickyNav(browser);
     await checkAgentSphere(browser);
     await checkMarketPulse(browser);
     await checkReducedMotion(browser);
     await captureResponsiveScreenshots(browser);
-    console.log("e2e: demo flow, streaming, agent sphere, market pulse, reduced motion and responsive capture passed");
+    console.log("e2e: demo flow, streaming, scrollbar, sticky nav, agent sphere, market pulse, reduced motion and responsive capture passed");
   } finally {
     await browser.close();
   }
@@ -79,6 +81,113 @@ async function checkStreamingTransport(browser: Browser) {
   assert(firstTrace !== undefined, "no trace event was streamed");
   assert(firstTrace.at < doneAt, `trace events must precede the done message (${firstTrace.at} vs ${doneAt})`);
 
+  await page.close();
+}
+
+/** The scrollbar has to report real scroll, and dragging it has to move the page. */
+async function checkScrollbar(browser: Browser) {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  await page.goto(`${baseUrl}/app/analyze`, { waitUntil: "domcontentloaded" });
+
+  const bar = page.locator("[data-scrollbar]");
+  await bar.waitFor({ timeout: 30_000 });
+
+  // The bar ships in the server-rendered HTML with a zero-height thumb, so its
+  // attributes are readable before hydration and report nothing real. Wait until
+  // the client has actually measured it.
+  await page.waitForFunction(() => document.documentElement.scrollHeight - window.innerHeight > 200, undefined, { timeout: 30_000 });
+  // Only the client sets an inline opacity, so this is a real hydration signal.
+  // `data-scroll-progress` is not: it ships in the SSR markup already set to 0.
+  await page.waitForFunction(() => document.querySelector<HTMLElement>("[data-scrollbar]")?.style.opacity !== "", undefined, { timeout: 30_000 });
+
+  const progress = async () => Number(await bar.getAttribute("data-scroll-progress"));
+  const scrollTo = async (fraction: number) => {
+    await page.evaluate((value) => window.scrollTo(0, (document.documentElement.scrollHeight - window.innerHeight) * value), fraction);
+    await page.waitForTimeout(250);
+  };
+
+  assert((await progress()) === 0, `the scrollbar should read empty at the top, saw ${await progress()}`);
+
+  await scrollTo(0.5);
+  const middle = await progress();
+  assert(middle > 0.4 && middle < 0.6, `half a page scrolled should read near 0.5, saw ${middle}`);
+
+  // The gutter fills as the page is read, so its height is the reading.
+  const half = await fillRatio(page);
+  assert(half > 0.4 && half < 0.6, `the gutter should be about half filled, saw ${half.toFixed(3)}`);
+
+  await scrollTo(1);
+  assert((await progress()) === 1, `the scrollbar should read full at the bottom, saw ${await progress()}`);
+  assert((await fillRatio(page)) > 0.98, `the gutter should be full at the bottom, saw ${(await fillRatio(page)).toFixed(3)}`);
+
+  // Grab at 80% rather than the very bottom: Next's dev indicator sits in the
+  // bottom-left corner and swallows the pointerdown there.
+  const box = (await bar.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height * 0.8);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2, box.y + 10, { steps: 8 });
+  await page.mouse.up();
+  await page.waitForTimeout(250);
+
+  const scrolled = await page.evaluate(() => window.scrollY);
+  assert(scrolled < 60, `dragging the gutter to the top should scroll the page there, scrollY is ${scrolled}`);
+
+  await page.close();
+}
+
+/** How much of the gutter is filled, 0..1. */
+async function fillRatio(page: Page) {
+  return page.evaluate(() => {
+    const track = document.querySelector<HTMLElement>("[data-scrollbar]");
+    const fill = document.querySelector<HTMLElement>("[data-scrollbar-fill]");
+
+    return track && fill && track.clientHeight > 0 ? fill.clientHeight / track.clientHeight : 0;
+  });
+}
+
+/**
+ * The nav floats 20px below the top of the viewport and pins there. The title
+ * block sits right below it at rest and scrolls away under it once the page
+ * moves, since keeping it on screen for the whole session costs about 130px of
+ * every page for information already read. The nav's logo cell has to land
+ * exactly where the vertical scroll gutter runs beneath it — that intersection
+ * is the whole point of the 20px offset on both.
+ */
+async function checkStickyNav(browser: Browser) {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  await page.goto(`${baseUrl}/app/analyze`, { waitUntil: "domcontentloaded" });
+  await page.locator("[data-sticky-nav]").waitFor({ timeout: 30_000 });
+  await page.waitForFunction(() => document.documentElement.scrollHeight - window.innerHeight > 200, undefined, { timeout: 30_000 });
+
+  const boxOf = async (selector: string) => (await page.locator(selector).boundingBox())!;
+  const topOf = async (selector: string) => (await boxOf(selector)).y;
+
+  const navAtRest = await topOf("[data-sticky-nav]");
+  assert(Math.abs(navAtRest - 20) < 2, `the nav should float 20px below the top, saw ${navAtRest}`);
+
+  const titleAtRest = await topOf("[data-market-header]");
+  assert(titleAtRest > 60, `the title band should sit below the nav at rest, saw ${titleAtRest}`);
+
+  // The logo cell and the scroll gutter both sit 20px off their edge and share
+  // the same width, so the logo has to land inside the gutter's horizontal span.
+  const logoBox = await boxOf('[data-sticky-nav] a[aria-label="Chaos Market AI home"]');
+  const gutterBox = await boxOf("[data-scrollbar]");
+  const logoCentreX = logoBox.x + logoBox.width / 2;
+  assert(
+    logoCentreX > gutterBox.x - 2 && logoCentreX < gutterBox.x + gutterBox.width + 2,
+    `the logo should sit above the scroll gutter, logo centre ${logoCentreX} vs gutter [${gutterBox.x}, ${gutterBox.x + gutterBox.width}]`,
+  );
+  assert(Math.abs(gutterBox.x - 20) < 2, `the scroll gutter should sit 20px from the left, saw ${gutterBox.x}`);
+  assert(gutterBox.y < 1, `the scroll gutter should run flush to the top, saw y=${gutterBox.y}`);
+
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(300);
+
+  const navScrolled = await topOf("[data-sticky-nav]");
+  assert(Math.abs(navScrolled - 20) < 2, `the nav should stay pinned 20px from the top, ended at ${navScrolled}`);
+  assert((await topOf("[data-market-header]")) < -40, "the title band should have scrolled away rather than pinning with the nav");
+
+  await assertNavigable(page, "scrolled nav", "analyze");
   await page.close();
 }
 

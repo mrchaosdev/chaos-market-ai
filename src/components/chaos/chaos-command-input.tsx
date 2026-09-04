@@ -25,6 +25,10 @@ export function ChaosCommandInput({ value, disabled = false, onChange, onSubmit 
         disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
         placeholder="Analyze BTC on 4H"
+        // An input carries an intrinsic width of about twenty characters, and that
+        // survives `min-w-0` when the browser works out the column's min-content.
+        // On a 390px screen it pushed the whole agent grid 18px past the viewport.
+        size={1}
         spellCheck={false}
         value={value}
       />

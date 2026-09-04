@@ -111,3 +111,15 @@ a {
     animation: none;
   }
 }
+
+/* The custom scroll gutter replaces the native bar from `sm` up, where it is
+   drawn. Below that it stays, because the gutter is hidden on small screens. */
+@media (min-width: 640px) {
+  html {
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar {
+    display: none;
+  }
+}

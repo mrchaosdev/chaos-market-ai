@@ -2,10 +2,10 @@ import { maxSignalScore } from "@/lib/analysis/comparison";
 import { AgentTrace } from "@/components/agent/agent-trace";
 import { ChaosDomainError } from "@/components/chaos/chaos-domain-error";
 import { ChaosField } from "@/components/chaos/chaos-field";
-import { ChaosLogo } from "@/components/chaos/chaos-logo";
+import { ChaosScrollbar } from "@/components/chaos/chaos-scrollbar";
 import { ChaosMetric } from "@/components/chaos/chaos-metric";
-import { AppNav } from "@/components/layout/app-nav";
 import { ChaosTerminalSurface } from "@/components/chaos/chaos-terminal-surface";
+import { AppTopNav } from "@/components/layout/app-top-nav";
 import { MarketAnalysisPanel } from "@/components/market/market-analysis-panel";
 import { MarketPulse } from "@/components/market/market-pulse";
 import { createMarketDataProvider } from "@/lib/market/factory";
@@ -20,14 +20,16 @@ export default async function Home() {
   const error = outcome.ok ? null : outcome.error;
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
+    <main className="relative min-h-screen bg-background text-foreground">
       <ChaosField />
+      <ChaosScrollbar />
       <div className="relative min-h-screen">
-        <section className="grid min-h-screen grid-rows-[auto_1fr]">
-          <header className="border-b border-border bg-background/95" data-market-header>
+        <section className="flex min-h-screen flex-col">
+          <AppTopNav />
+
+          <div className="border-b border-border sm:pl-[70px]" data-market-header>
             <div className="grid gap-px bg-border md:grid-cols-[1fr_420px]">
-              <div className="flex items-center gap-4 bg-background/95 px-5 py-5 lg:px-8">
-                <ChaosLogo size={40} />
+              <div className="flex items-center bg-background/95 px-5 py-5 lg:px-8">
                 <div>
                   <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
                     Binance Agent OS Mini Hackathon / Read Only Intelligence
@@ -41,11 +43,9 @@ export default async function Home() {
                 <ChaosMetric label="Signal" value={result ? `${result.signal.score}/${maxSignalScore}` : "UNAVAILABLE"} />
               </div>
             </div>
+          </div>
 
-            <AppNav />
-          </header>
-
-          <div className="grid grid-cols-1 gap-px bg-border xl:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)]">
+          <div className="grid flex-1 grid-cols-1 gap-px bg-border sm:pl-[70px] xl:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)]">
             <section className="bg-background/94 p-5 lg:p-8">
               <div className="grid gap-8 xl:grid-cols-[0.92fr_1fr] xl:items-end">
                 <div>
