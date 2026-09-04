@@ -48,7 +48,7 @@ Prefer Server Components. Use Client Components only for interaction, streaming,
 src/lib/market
 ├── provider.ts              MarketDataProvider interface
 ├── types.ts                 normalized market domain types
-└── binance/                 Binance MCP / public adapter boundary
+└── binance/                 Binance public REST adapter (MCP is a future second adapter, TODO §4)
 ```
 
 ```text
@@ -82,7 +82,7 @@ Adapters convert external data to:
 - `FundingRate`
 - `OrderBook`
 
-If Binance MCP changes, only the adapter should change.
+There is no live Binance MCP runtime today, so `BinancePublicAdapter` is the only implementation of `MarketDataProvider`. If a Binance MCP server becomes available, it lands as a second adapter behind the same interface — no workflow, UI, or persistence code changes.
 
 ---
 
@@ -149,16 +149,17 @@ Routes should validate input, call workflow modules, and return typed JSON. They
 
 ## 8. Error handling
 
-Known domain errors:
+Known domain errors (`src/lib/utils/errors.ts` is the source of truth — keep this list in sync with it):
 
-- `MCP_CONNECTION_ERROR`
 - `BINANCE_UNAVAILABLE`
+- `REGION_RESTRICTED`
 - `INVALID_SYMBOL`
 - `RATE_LIMIT`
 - `MARKET_DATA_ERROR`
 - `ANALYTICS_ERROR`
 - `AI_PROVIDER_ERROR`
 - `DATABASE_ERROR`
+- `COMMAND_NOT_ROUTED`
 
 UI should render domain-specific errors, not generic failure text.
 

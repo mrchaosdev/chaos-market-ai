@@ -270,8 +270,9 @@ PostgreSQL
 Drizzle ORM
 Vitest
 Playwright
-Binance Agent OS / MCP
 ```
+
+Market data reaches Binance today through its public REST API only (`BinancePublicAdapter`). Binance Agent OS / MCP is not integrated — no public runtime exists to connect to. `MarketDataProvider` is the interface it would land behind as a second adapter, with no change required to workflows, UI, or persistence. Tracked as a blocked backlog item in `docs/TODO.md` §4.
 
 ---
 

@@ -10,6 +10,7 @@ type AgentTraceProps = {
   events: AgentTraceEvent[];
   runId: string | null;
   isRunning: boolean;
+  embedded?: boolean;
 };
 
 const phaseLabels: Record<TracePhase, string> = {
@@ -23,7 +24,7 @@ const phaseLabels: Record<TracePhase, string> = {
 
 const phaseOrder: TracePhase[] = ["intent", "market_data", "analytics", "signal", "ai", "persistence"];
 
-export function AgentTrace({ events, runId, isRunning }: AgentTraceProps) {
+export function AgentTrace({ events, runId, isRunning, embedded = false }: AgentTraceProps) {
   const container = useRef<HTMLDivElement>(null);
   const revealed = useRef<{ runId: string | null; keys: Set<string> }>({ runId: null, keys: new Set() });
 
@@ -82,14 +83,16 @@ export function AgentTrace({ events, runId, isRunning }: AgentTraceProps) {
     .filter((group) => group.rows.length > 0);
 
   return (
-    <div className="cm-agent-trace border border-border bg-background" ref={container}>
-      <div className="cm-agent-trace__header flex items-center justify-between gap-3 border-b border-border p-4">
-        <div className="cm-agent-trace__heading">
-          <p className="cm-agent-trace__run-id font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Chaos / {runId ?? "no run"}</p>
-          <h3 className="cm-agent-trace__title mt-2 text-xl font-semibold">Agent execution stream</h3>
+    <div className={`cm-agent-trace ${embedded ? "cm-agent-trace--embedded" : ""} border border-border bg-background`} ref={container}>
+      {embedded ? null : (
+        <div className="cm-agent-trace__header flex items-center justify-between gap-3 border-b border-border p-4">
+          <div className="cm-agent-trace__heading">
+            <p className="cm-agent-trace__run-id font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Chaos / {runId ?? "no run"}</p>
+            <h3 className="cm-agent-trace__title mt-2 text-xl font-semibold">Agent execution stream</h3>
+          </div>
+          <span className="cm-agent-trace__mode border border-primary px-2 py-1 font-mono text-[11px] uppercase text-primary">{isRunning ? "Running" : "Read only"}</span>
         </div>
-        <span className="cm-agent-trace__mode border border-primary px-2 py-1 font-mono text-[11px] uppercase text-primary">{isRunning ? "Running" : "Read only"}</span>
-      </div>
+      )}
 
       {events.length === 0 ? (
         <p className="cm-agent-trace__empty p-4 text-sm text-muted-foreground">

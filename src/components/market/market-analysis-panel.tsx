@@ -1,3 +1,4 @@
+import { TokenIcon } from "@/components/chaos/token-icon";
 import { maxSignalScore, signalComponentMax } from "@/lib/analysis/comparison";
 import { formatNumber } from "@/lib/utils/format-number";
 import { formatPercent } from "@/lib/utils/format-market";
@@ -17,7 +18,8 @@ export function MarketAnalysisPanel({ analysis, showChart = true }: MarketAnalys
       <div className="cm-analysis__market bg-surface p-4 md:p-5">
         <div className="cm-analysis__headline grid gap-px bg-border md:grid-cols-[1fr_170px]">
           <div className="cm-analysis__price-card bg-background p-4">
-            <p className="cm-analysis__symbol font-mono text-xs uppercase tracking-[0.24em] text-muted-foreground">
+            <p className="cm-analysis__symbol flex items-center gap-2 font-mono text-xs uppercase tracking-[0.24em] text-muted-foreground">
+              <TokenIcon size={26} symbol={analysis.market.ticker.symbol} />
               {analysis.market.ticker.symbol} · {analysis.timeframe.toUpperCase()}
             </p>
             <p className="cm-analysis__price mt-4 font-mono text-5xl tracking-[-0.06em] tabular">{formatNumber(analysis.market.ticker.price)}</p>

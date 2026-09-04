@@ -1,3 +1,4 @@
+import { TokenIcon } from "@/components/chaos/token-icon";
 import { maxSignalScore } from "@/lib/analysis/comparison";
 import { formatNumber } from "@/lib/utils/format-number";
 import { formatPercent } from "@/lib/utils/format-market";
@@ -29,7 +30,10 @@ export function OverviewPanel({ result }: { result: MarketOverviewResult }) {
         <div className="cm-overview-panel__movers mt-5 grid gap-px bg-border md:grid-cols-3">
           {movers.map((analysis) => (
             <div className="cm-overview-panel__mover bg-background p-4" key={analysis.symbol}>
-              <p className="cm-overview-panel__mover-symbol font-mono text-xs text-muted-foreground">{analysis.symbol}</p>
+              <p className="cm-overview-panel__mover-symbol flex items-center gap-2 font-mono text-xs text-muted-foreground">
+                <TokenIcon size={26} symbol={analysis.symbol} />
+                {analysis.symbol}
+              </p>
               <p className="cm-overview-panel__mover-price mt-3 font-mono text-2xl tabular">{formatNumber(analysis.market.ticker.price, 2)}</p>
               <p className={`cm-overview-panel__mover-change mt-1 font-mono text-xs tabular ${analysis.market.ticker.change24hPercent >= 0 ? "text-positive" : "text-negative"}`}>
                 {formatPercent(analysis.market.ticker.change24hPercent)} 24h

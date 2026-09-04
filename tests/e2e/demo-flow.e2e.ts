@@ -228,7 +228,13 @@ async function checkAgentSphere(browser: Browser) {
   });
 
   await page.getByRole("button", { name: "Analyze BTC on 4H" }).click();
-  await page.getByText(/signal alignment/i).first().waitFor({ timeout: 60_000 });
+  // Not text-matching "signal alignment": the idle placeholder that's on screen
+  // before any run ("Evidence · signal alignment before prose") contains that
+  // exact phrase too, and racing a click against React's own re-render could
+  // let this resolve against the *old* idle DOM instead of the real result —
+  // intermittently, since it depends on which commits first. The score element
+  // only exists once `MarketAnalysisPanel` has actually rendered a result.
+  await page.locator(".cm-analysis__signal-score").first().waitFor({ timeout: 60_000 });
   await page.waitForTimeout(300);
 
   const states = await page.evaluate(() => (window as unknown as { __agentStates: { state: string; rate: number }[] }).__agentStates);
@@ -394,7 +400,18 @@ async function captureResponsiveScreenshots(browser: Browser) {
 async function runAgentWorkflow(page: Page) {
   await page.goto(`${baseUrl}/app/agent`, { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: "Analyze BTC on 4H" }).click();
-  await page.getByText(/signal alignment/i).first().waitFor({ timeout: 60_000 });
+  // Not text-matching "signal alignment": the idle placeholder that's on screen
+  // before any run ("Evidence · signal alignment before prose") contains that
+  // exact phrase too, and racing a click against React's own re-render could
+  // let this resolve against the *old* idle DOM instead of the real result —
+  // intermittently, since it depends on which commits first. The score element
+  // only exists once `MarketAnalysisPanel` has actually rendered a result.
+  await page.locator(".cm-analysis__signal-score").first().waitFor({ timeout: 60_000 });
+
+  // The result panel switches back to its Output tab the instant a run
+  // completes, which unmounts the trace rows. They live behind the Execution
+  // tab now instead of always being on screen next to the result.
+  await page.locator("#agent-execution-tab").click();
   await page.locator("[data-trace-row]").first().waitFor({ timeout: 30_000 });
   await waitForRevealSettled(page);
 }

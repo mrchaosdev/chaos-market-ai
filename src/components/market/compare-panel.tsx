@@ -1,3 +1,4 @@
+import { TokenIcon } from "@/components/chaos/token-icon";
 import { maxSignalScore } from "@/lib/analysis/comparison";
 import { formatNumber } from "@/lib/utils/format-number";
 import { formatPercent } from "@/lib/utils/format-market";
@@ -13,7 +14,8 @@ export function ComparePanel({ result }: { result: CompareAssetsResult }) {
         <p className="cm-compare-panel__title font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">Relative strength · {result.timeframe.toUpperCase()}</p>
 
         {leader ? (
-          <p className="cm-compare-panel__leader mt-4 text-3xl font-semibold tracking-[-0.04em]">
+          <p className="cm-compare-panel__leader mt-4 flex items-center gap-3 text-3xl font-semibold tracking-[-0.04em]">
+            <TokenIcon size={36} symbol={leader.symbol} />
             {leader.symbol} leads on signal alignment
             <span className="cm-compare-panel__leader-score ml-3 font-mono text-xl text-primary tabular">{leader.signal.score} / {maxSignalScore}</span>
           </p>
@@ -27,7 +29,10 @@ export function ComparePanel({ result }: { result: CompareAssetsResult }) {
         >
           {result.analyses.map((analysis) => (
             <div className="cm-compare-asset bg-background p-4" key={analysis.symbol}>
-              <p className="cm-compare-asset__symbol font-mono text-xs text-muted-foreground">{analysis.symbol}</p>
+              <p className="cm-compare-asset__symbol flex items-center gap-2 font-mono text-xs text-muted-foreground">
+                <TokenIcon size={26} symbol={analysis.symbol} />
+                {analysis.symbol}
+              </p>
               <p className="cm-compare-asset__price mt-3 font-mono text-3xl tabular">{formatNumber(analysis.market.ticker.price, 2)}</p>
               <p className={`cm-compare-asset__change mt-1 font-mono text-xs tabular ${analysis.market.ticker.change24hPercent >= 0 ? "text-positive" : "text-negative"}`}>
                 {formatPercent(analysis.market.ticker.change24hPercent)} 24h

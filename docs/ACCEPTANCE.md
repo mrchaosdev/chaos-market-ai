@@ -12,7 +12,7 @@
 ## 2. Market data
 
 - [ ] `MarketDataProvider` boundary is used everywhere.
-- [ ] Binance MCP/public adapter returns normalized types.
+- [ ] Binance public adapter returns normalized types. *(MCP adapter deferred — no runtime exists yet; see `docs/TODO.md` §4.)*
 - [ ] No Binance response shapes leak into UI/workflows.
 - [ ] Market data errors return domain error codes.
 - [ ] No silent production fallback to mock prices.

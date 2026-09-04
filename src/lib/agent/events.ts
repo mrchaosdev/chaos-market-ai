@@ -81,7 +81,7 @@ export class TraceRecorder {
       const chaosError = toChaosError(error, options.errorCode);
       this.record(step, "error", {
         latencyMs: Date.now() - startedAt,
-        outputSummary: chaosError.message,
+        outputSummary: truncateSummary(chaosError.message),
         errorCode: chaosError.code,
       });
 
@@ -90,7 +90,7 @@ export class TraceRecorder {
   }
 
   warn(step: TraceStep, message: string, errorCode?: ChaosErrorCode) {
-    return this.record(step, "warning", { outputSummary: message, errorCode });
+    return this.record(step, "warning", { outputSummary: truncateSummary(message), errorCode });
   }
 
   snapshot(): AgentTraceEvent[] {
@@ -100,4 +100,24 @@ export class TraceRecorder {
 
 export function createRunId(prefix: string) {
   return `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+}
+
+const traceSummaryMaxLength = 160;
+
+/**
+ * A trace row is a fixed-height compact log line, but the text landing here can
+ * come from a third-party provider's error response — a Gemini quota failure
+ * runs to several hundred characters across multiple lines and blew the row
+ * layout budget on narrow viewports. The full message still reaches the caller
+ * uncut (`ChaosError.message`, `aiWarning` on the analysis result); only what
+ * gets logged into the trace itself is bounded.
+ */
+function truncateSummary(message: string | undefined): string | undefined {
+  if (!message) {
+    return message;
+  }
+
+  const collapsed = message.replace(/\s+/g, " ").trim();
+
+  return collapsed.length > traceSummaryMaxLength ? `${collapsed.slice(0, traceSummaryMaxLength - 1)}…` : collapsed;
 }

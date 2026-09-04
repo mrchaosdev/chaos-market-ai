@@ -41,12 +41,15 @@ State and variant modifiers may be generated from component props. Examples:
 | Overview | `.cm-overview-panel`, `.cm-overview-panel__regime`, `.cm-overview-panel__movers`, `.cm-overview-panel__primary-analysis` |
 | Compare | `.cm-compare-panel`, `.cm-compare-panel__assets`, `.cm-compare-asset`, `.cm-compare-table`, `.cm-compare-panel__interpretation` |
 | Entry | `.cm-entry-panel`, `.cm-entry-panel__fields`, `.cm-entry-field`, `.cm-entry-panel__evidence`, `.cm-entry-panel__analysis` |
-| Agent workflow | `.cm-agent-workflow`, `.cm-agent-workflow__controls`, `.cm-agent-workflow__command`, `.cm-agent-workflow__trace`, `.cm-agent-workflow__result` |
+| Agent workflow | `.cm-agent-workflow`, `.cm-agent-workflow__sidebar`, `.cm-agent-workflow__dock`, `.cm-agent-workflow__result`, `.cm-agent-result-header`, `.cm-agent-result-tabs`, `.cm-agent-workflow__trace`, `.cm-agent-workflow__output` |
 | Agent trace | `.cm-agent-trace`, `.cm-agent-trace__group`, `.cm-agent-trace-row` |
 | Agent sphere | `.cm-agent-sphere`, `.cm-agent-sphere__vitals` |
 | Market pulse | `.cm-market-pulse`, `.cm-market-pulse__readouts` |
 | Market chart | `.cm-market-chart`, `.cm-market-chart__legend`, `.cm-market-chart__canvas` |
 | Market watch | `.cm-market-watch`, `.cm-market-watch__row` |
+| Symbol picker | `.cm-symbol-picker`, `.cm-symbol-picker__item`, `.cm-symbol-picker__item--disabled` |
+| Loading panel | `.cm-loading-panel`, `.cm-loading-panel__dots` |
+| Token icon | `.cm-token-icon`, `.cm-token-icon--fallback` |
 | Workflow metadata | `.cm-workflow-meta`, `.cm-workflow-meta__item`, `.cm-workflow-meta__run-id` |
 
 ## Shared primitives

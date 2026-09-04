@@ -17,6 +17,7 @@ export class VercelAIProvider implements AIProvider {
     private readonly model: LanguageModel,
     providerName: AIProviderName,
     modelId: string,
+    private readonly providerOptions?: Parameters<typeof generateObject>[0]["providerOptions"],
   ) {
     this.descriptor = { name: providerName, model: modelId, isFallback: false };
   }
@@ -49,13 +50,23 @@ export class VercelAIProvider implements AIProvider {
           system: analystSystemPrompt,
           prompt,
           abortSignal: AbortSignal.timeout(requestTimeoutMs),
+          providerOptions: this.providerOptions,
+          // The retry loop around this call is the one source of truth for
+          // retry/backoff policy — it knows to skip 429s outright, which the
+          // SDK's own default (2 retries here too) does not, so left on it
+          // silently doubled every retryable failure's latency.
+          maxRetries: 0,
         });
 
         return result.object;
       } catch (error) {
         lastError = error;
 
-        if (!isTransient(error) || attempt === maxTransientRetries) {
+        // A 429 here means quota, not a brief queueing hiccup — the API's own
+        // retry-after runs tens of seconds, and this loop's backoff tops out
+        // under a second. Retrying it can only ever burn the request budget on
+        // its way to the same fallback, so skip straight there.
+        if (!isTransient(error) || isRateLimited(error) || attempt === maxTransientRetries) {
           break;
         }
 
@@ -76,13 +87,21 @@ function isTransient(error: unknown) {
     return true;
   }
 
-  const status = (error as { statusCode?: number; status?: number }).statusCode ?? (error as { status?: number }).status;
+  const status = statusOf(error);
 
   if (typeof status === "number") {
     return status === 408 || status === 409 || status === 429 || status >= 500;
   }
 
   return /fetch failed|network|ECONNRESET|ETIMEDOUT/i.test(error.message);
+}
+
+function isRateLimited(error: unknown) {
+  return error instanceof Error && statusOf(error) === 429;
+}
+
+function statusOf(error: Error) {
+  return (error as { statusCode?: number; status?: number }).statusCode ?? (error as { status?: number }).status;
 }
 
 function describeFailure(providerName: string, error: unknown) {

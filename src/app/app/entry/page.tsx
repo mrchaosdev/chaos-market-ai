@@ -1,6 +1,7 @@
 import { ChaosDomainError } from "@/components/chaos/chaos-domain-error";
 import { AppShell } from "@/components/layout/app-shell";
 import { EntryPanel } from "@/components/market/entry-panel";
+import { SymbolPicker } from "@/components/market/symbol-picker";
 import { WorkflowMetaBar } from "@/components/market/workflow-meta-bar";
 import { normalizeSymbol } from "@/lib/agent/parse-command";
 import { createMarketDataProvider } from "@/lib/market/factory";
@@ -25,7 +26,8 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
   if (!outcome.ok) {
     return (
       <AppShell>
-        <section className="cm-page cm-page--entry cm-page--error bg-background p-5 lg:p-8">
+        <section className="cm-page cm-page--entry cm-page--error space-y-4 bg-background p-5 lg:p-8">
+          <SymbolPicker activeSymbol={symbol} basePath="/app/entry" timeframe={timeframe} />
           <ChaosDomainError error={outcome.error} runId={outcome.runId} />
         </section>
       </AppShell>
@@ -36,6 +38,7 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
     <AppShell>
       <section className="cm-page cm-page--entry space-y-4 bg-background p-5 lg:p-8">
         <WorkflowMetaBar meta={outcome.data.meta} runId={outcome.data.runId} workflow={outcome.data.workflow} />
+        <SymbolPicker activeSymbol={symbol} basePath="/app/entry" timeframe={timeframe} />
         <EntryPanel result={outcome.data} />
       </section>
     </AppShell>

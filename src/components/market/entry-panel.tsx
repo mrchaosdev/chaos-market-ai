@@ -1,3 +1,4 @@
+import { TokenIcon } from "@/components/chaos/token-icon";
 import { maxSignalScore } from "@/lib/analysis/comparison";
 import { formatNumber } from "@/lib/utils/format-number";
 import type { EntryAnalysisResult } from "@/lib/workflows/types";
@@ -9,7 +10,8 @@ export function EntryPanel({ result }: { result: EntryAnalysisResult }) {
   return (
     <div className="cm-entry-panel space-y-px bg-border">
       <section className="cm-entry-panel__summary bg-background p-4 md:p-5">
-        <p className="cm-entry-panel__title font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">
+        <p className="cm-entry-panel__title flex items-center gap-2 font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">
+          <TokenIcon size={26} symbol={result.symbol} />
           Entry-area structure · {result.symbol} · {result.timeframe.toUpperCase()}
         </p>
 

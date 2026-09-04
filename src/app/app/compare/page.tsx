@@ -1,6 +1,7 @@
 import { ChaosDomainError } from "@/components/chaos/chaos-domain-error";
 import { AppShell } from "@/components/layout/app-shell";
 import { ComparePanel } from "@/components/market/compare-panel";
+import { SymbolMultiPicker } from "@/components/market/symbol-picker";
 import { WorkflowMetaBar } from "@/components/market/workflow-meta-bar";
 import { normalizeSymbol } from "@/lib/agent/parse-command";
 import { createMarketDataProvider } from "@/lib/market/factory";
@@ -25,7 +26,8 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
   if (!outcome.ok) {
     return (
       <AppShell>
-        <section className="cm-page cm-page--compare cm-page--error bg-background p-5 lg:p-8">
+        <section className="cm-page cm-page--compare cm-page--error space-y-4 bg-background p-5 lg:p-8">
+          <SymbolMultiPicker activeSymbols={symbols} basePath="/app/compare" timeframe={timeframe} />
           <ChaosDomainError error={outcome.error} runId={outcome.runId} />
         </section>
       </AppShell>
@@ -36,6 +38,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
     <AppShell>
       <section className="cm-page cm-page--compare space-y-4 bg-background p-5 lg:p-8">
         <WorkflowMetaBar meta={outcome.data.meta} runId={outcome.data.runId} workflow={outcome.data.workflow} />
+        <SymbolMultiPicker activeSymbols={symbols} basePath="/app/compare" timeframe={timeframe} />
         <ComparePanel result={outcome.data} />
       </section>
     </AppShell>

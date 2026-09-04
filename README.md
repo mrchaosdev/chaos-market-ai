@@ -30,11 +30,12 @@ Every value is server-only. Nothing is exposed through `NEXT_PUBLIC_*`.
 | `BINANCE_PUBLIC_BASE_URL` | no | `https://fapi.binance.com` | Binance USDT-M futures public REST base URL. |
 | `AI_PROVIDER` | no | `local` | `local`, `openai`, `gemini`, or `anthropic`. |
 | `AI_API_KEY` | only for cloud providers | — | Provider API key. Without it the app falls back to `local`. |
-| `AI_MODEL` | no | provider default | Model id, e.g. `claude-haiku-4-5-20251001`, `gpt-4o-mini`, `gemini-2.0-flash`. |
+| `AI_MODEL` | no | provider default | Model id, e.g. `claude-haiku-4-5-20251001`, `gpt-4o-mini`, `gemini-3.6-flash`. |
 | `DATABASE_URL` | no | — | PostgreSQL connection string. Without it workflows still run, and the UI states that persistence is disabled. |
-| `BINANCE_MCP_URL` | no | — | Reserved for the Binance Agent OS / MCP adapter. |
 
 ### Binance market data
+
+V1 talks to Binance directly over its public REST API — there is no Binance Agent OS / MCP runtime to connect to yet, so `MarketDataProvider` has exactly one live implementation (`BinancePublicAdapter`). If a Binance MCP server becomes available, it plugs in as a second `MarketDataProvider` implementation behind the same interface; no caller changes. See `docs/TODO.md` §4 for that item's status.
 
 The public adapter reads four endpoints, all unauthenticated and read-only:
 
@@ -85,6 +86,36 @@ npm run test
 ```
 
 It defaults to that connection string and honours `TEST_DATABASE_URL` if you use another. With no database reachable the suite skips and prints why, so the rest of `npm run test` still runs.
+
+---
+
+## Commands
+
+Commands are routed at `/app/agent` by keyword, not by a language model — the router is a small set of regular expressions in [`src/lib/agent/router.ts`](src/lib/agent/router.ts), deliberately, so that routing is deterministic and auditable rather than another place the model can improvise. Two consequences worth stating plainly:
+
+- **English only.** The patterns match English verbs. A command in any other language routes to `COMMAND NOT ROUTED`, which is a routing limit, not a comment on the input.
+- **The keyword decides the workflow**, not the overall sense of the sentence.
+
+| Workflow | Triggered by any of |
+|---|---|
+| Compare assets | `compare`, `versus`, `vs`, `stronger`, `relative strength` |
+| Entry analysis | `entry`, `entries`, `good time/level/area/spot`, `near support`, `pullback` |
+| Market overview | `overview`, `how is the market`, `market today/overview/regime/state/condition`, `market now` |
+| Analyze one asset | `analyze`/`analyse`, `analysis`, `inspect`, `breakdown`, `structure of` |
+
+Rules are evaluated in that order, so `Compare BTC entry area` compares — `compare` is tested before `entry`.
+
+Symbols are read from the command against a ten-asset allowlist (BTC, ETH, BNB, SOL, XRP, DOGE, ADA, AVAX, LINK, TON), and timeframes from `15m`, `1h`, `4h`, `1d` (also `hourly`, `daily`, `24h`). Anything unstated falls back: BTC on 4H for a single asset, BTC and ETH for a comparison; the market overview is always BTC / ETH / BNB.
+
+```text
+Analyze SOL on 1d
+Compare ETH vs SOL on 4h
+Is DOGE near a good entry area?
+Inspect LINK structure on 1h
+How is the market today?
+```
+
+Anything outside those four workflows returns `COMMAND NOT ROUTED` with suggestions. There is no general chatbot fallback, by design — see [V1 law](#v1-law).
 
 ---
 

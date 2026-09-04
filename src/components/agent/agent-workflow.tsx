@@ -15,6 +15,7 @@ import { createStreamParser } from "@/lib/agent/stream-protocol";
 import { routedCommandExamples } from "@/lib/agent/router";
 
 type WorkflowState = "idle" | "running" | "settled";
+type ResultView = "output" | "execution";
 
 export function AgentWorkflow() {
   const [command, setCommand] = useState("Analyze BTC on 4H");
@@ -22,12 +23,14 @@ export function AgentWorkflow() {
   const [execution, setExecution] = useState<AgentExecution | null>(null);
   const [liveTrace, setLiveTrace] = useState<AgentTraceEvent[]>([]);
   const [transportError, setTransportError] = useState<string | null>(null);
+  const [resultView, setResultView] = useState<ResultView>("output");
 
   async function run(nextCommand: string) {
     setState("running");
     setExecution(null);
     setLiveTrace([]);
     setTransportError(null);
+    setResultView("execution");
 
     try {
       const response = await fetch("/api/chat", {
@@ -51,6 +54,7 @@ export function AgentWorkflow() {
 
           if (message.type === "done") {
             setExecution(message.execution);
+            setResultView("output");
           }
         }
       };
@@ -68,6 +72,7 @@ export function AgentWorkflow() {
       apply(parser.flush());
     } catch {
       setTransportError("The agent API could not be reached from this browser session.");
+      setResultView("output");
     } finally {
       setState("settled");
     }
@@ -93,60 +98,120 @@ export function AgentWorkflow() {
 
   return (
     <div className="cm-agent-workflow grid gap-px bg-border xl:grid-cols-[minmax(460px,34%)_1fr]">
-      <section className="cm-agent-workflow__controls space-y-8 bg-background/95 p-5 lg:p-8">
-        <AgentSphere activity={activity} runId={runId} trace={trace} />
+      <section className="cm-agent-workflow__sidebar bg-background/95">
+        <div className="cm-agent-workflow__controls h-full w-full p-5 lg:p-8">
+          <div className="cm-agent-workflow__dock xl:sticky xl:top-[70px]">
+            <AgentSphere activity={activity} runId={runId} trace={trace} />
 
-        <ChaosTerminalSurface>
-          <div className="cm-agent-workflow__command p-5">
-            <ChaosCommandInput disabled={state === "running"} onChange={setCommand} onSubmit={() => run(command)} value={command} />
-            <div className="cm-agent-workflow__examples mt-3 flex flex-wrap gap-2">
-              {routedCommandExamples.map((example) => (
-                <button
-                  className="cm-agent-workflow__example border border-border px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-surface-hover disabled:opacity-50"
-                  disabled={state === "running"}
-                  key={example}
-                  onClick={() => {
-                    setCommand(example);
-                    void run(example);
-                  }}
-                  type="button"
-                >
-                  {example}
-                </button>
-              ))}
+            <div className="cm-agent-workflow__composer -mt-px">
+              <ChaosTerminalSurface>
+                <div className="cm-agent-workflow__command p-5">
+                  <ChaosCommandInput disabled={state === "running"} onChange={setCommand} onSubmit={() => run(command)} value={command} />
+                  <div className="cm-agent-workflow__examples mt-3 flex flex-wrap gap-2">
+                    {routedCommandExamples.map((example) => (
+                      <button
+                        className="cm-agent-workflow__example border border-border px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-surface-hover disabled:opacity-50"
+                        disabled={state === "running"}
+                        key={example}
+                        onClick={() => {
+                          setCommand(example);
+                          void run(example);
+                        }}
+                        type="button"
+                      >
+                        {example}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </ChaosTerminalSurface>
             </div>
           </div>
-        </ChaosTerminalSurface>
-
-        <div className="cm-agent-workflow__trace">
-          <AgentTrace events={trace} isRunning={state === "running"} runId={runId} />
         </div>
-
-        {execution?.status === "success" ? (
-          <div className="cm-agent-workflow__feedback mt-4">
-            <RunFeedback persistence={execution.persistence} runId={execution.runId} />
-          </div>
-        ) : null}
       </section>
 
-      <section className="cm-agent-workflow__result bg-surface p-5 lg:p-8">
-        {transportError ? (
-          <ChaosDomainError
-            error={{ code: "MARKET_DATA_ERROR", message: transportError, hint: "Check that the Next.js server is running and reachable." }}
-            onRetry={() => run(command)}
-          />
-        ) : null}
+      <section className="cm-agent-workflow__result min-w-0 bg-surface">
+        <header className="cm-agent-result-header border-b border-border bg-background px-5 py-3 lg:px-8 xl:sticky xl:top-[70px] xl:z-30">
+          <div className="cm-agent-result-header__inner flex flex-wrap items-center justify-between gap-3">
+            <div aria-label="Agent result view" className="cm-agent-result-tabs flex items-center gap-1" role="tablist">
+              <button
+                aria-controls="agent-output-panel"
+                aria-selected={resultView === "output"}
+                className={`cm-agent-result-tabs__tab cm-agent-result-tabs__tab--output min-w-24 border px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] transition-colors ${
+                  resultView === "output" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:bg-surface-hover"
+                }`}
+                id="agent-output-tab"
+                onClick={() => setResultView("output")}
+                role="tab"
+                type="button"
+              >
+                Output
+              </button>
+              <button
+                aria-controls="agent-execution-panel"
+                aria-selected={resultView === "execution"}
+                className={`cm-agent-result-tabs__tab cm-agent-result-tabs__tab--execution min-w-24 border px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] transition-colors ${
+                  resultView === "execution" ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:bg-surface-hover"
+                }`}
+                id="agent-execution-tab"
+                onClick={() => setResultView("execution")}
+                role="tab"
+                type="button"
+              >
+                Execution <span className="cm-agent-result-tabs__count tabular">{trace.length}</span>
+              </button>
+            </div>
 
-        {execution?.status === "error" ? <ChaosDomainError error={execution.error} onRetry={() => run(command)} runId={execution.runId} /> : null}
+            <div className="cm-agent-result-header__status flex min-w-0 items-center gap-3 font-mono text-[11px] uppercase tracking-[0.14em]">
+              <span className={activity === "failed" ? "text-negative" : activity === "running" ? "text-primary" : "text-muted-foreground"}>
+                {activityLabel(activity)}
+              </span>
+              <span className="cm-agent-result-header__run-id max-w-48 truncate text-subtle-foreground">{runId ?? "no run"}</span>
+            </div>
+          </div>
+        </header>
 
-        {execution?.status === "not_routed" ? <NotRouted execution={execution} onPick={(next) => { setCommand(next); void run(next); }} /> : null}
+        <div className="cm-agent-workflow__result-body p-5 lg:p-8">
+          {resultView === "execution" ? (
+            <div aria-labelledby="agent-execution-tab" className="cm-agent-workflow__trace" id="agent-execution-panel" role="tabpanel">
+              <AgentTrace embedded events={trace} isRunning={state === "running"} runId={runId} />
+            </div>
+          ) : (
+            <div aria-labelledby="agent-output-tab" className="cm-agent-workflow__output space-y-4" id="agent-output-panel" role="tabpanel">
+              {transportError ? (
+                <ChaosDomainError
+                  error={{ code: "MARKET_DATA_ERROR", message: transportError, hint: "Check that the Next.js server is running and reachable." }}
+                  onRetry={() => run(command)}
+                />
+              ) : null}
 
-        {execution?.status === "success" ? <WorkflowResult result={execution.result} /> : null}
+              {execution?.status === "error" ? <ChaosDomainError error={execution.error} onRetry={() => run(command)} runId={execution.runId} /> : null}
 
-        {execution === null && !transportError ? <IdleState isRunning={state === "running"} /> : null}
+              {execution?.status === "not_routed" ? <NotRouted execution={execution} onPick={(next) => { setCommand(next); void run(next); }} /> : null}
+
+              {execution?.status === "success" ? <WorkflowResult result={execution.result} /> : null}
+
+              {execution === null && !transportError ? <IdleState isRunning={state === "running"} /> : null}
+
+              {execution?.status === "success" ? (
+                <div className="cm-agent-workflow__feedback">
+                  <RunFeedback persistence={execution.persistence} runId={execution.runId} />
+                </div>
+              ) : null}
+            </div>
+          )}
+        </div>
       </section>
     </div>
   );
+}
+
+function activityLabel(activity: AgentActivity) {
+  if (activity === "settled") {
+    return "complete";
+  }
+
+  return activity.replace("_", " ");
 }
 
 function NotRouted({ execution, onPick }: { execution: Extract<AgentExecution, { status: "not_routed" }>; onPick: (command: string) => void }) {

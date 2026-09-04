@@ -2,7 +2,6 @@ import { maxSignalScore } from "@/lib/analysis/comparison";
 import { AgentTrace } from "@/components/agent/agent-trace";
 import { ChaosDomainError } from "@/components/chaos/chaos-domain-error";
 import { ChaosField } from "@/components/chaos/chaos-field";
-import { ChaosScrollbar } from "@/components/chaos/chaos-scrollbar";
 import { ChaosMetric } from "@/components/chaos/chaos-metric";
 import { ChaosTerminalSurface } from "@/components/chaos/chaos-terminal-surface";
 import { AppTopNav } from "@/components/layout/app-top-nav";
@@ -22,7 +21,6 @@ export default async function Home() {
   return (
     <main className="cm-landing relative min-h-screen bg-background text-foreground">
       <ChaosField />
-      <ChaosScrollbar />
       <div className="cm-landing__frame relative min-h-screen">
         <section className="cm-landing__content flex min-h-screen flex-col">
           <AppTopNav />
