@@ -4,6 +4,7 @@ import { ChaosDomainError } from "@/components/chaos/chaos-domain-error";
 import { ChaosField } from "@/components/chaos/chaos-field";
 import { ChaosLogo } from "@/components/chaos/chaos-logo";
 import { ChaosMetric } from "@/components/chaos/chaos-metric";
+import { AppNav } from "@/components/layout/app-nav";
 import { ChaosTerminalSurface } from "@/components/chaos/chaos-terminal-surface";
 import { MarketAnalysisPanel } from "@/components/market/market-analysis-panel";
 import { MarketPulse } from "@/components/market/market-pulse";
@@ -21,35 +22,27 @@ export default async function Home() {
   return (
     <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <ChaosField />
-      <div className="relative grid min-h-screen grid-cols-1 lg:grid-cols-[72px_1fr]">
-        <aside className="hidden border-r border-border bg-background/90 lg:grid lg:grid-rows-[96px_1fr_120px]">
-          <div className="grid place-items-center border-b border-border">
-            <ChaosLogo size={34} />
-          </div>
-          <nav className="grid place-items-center py-8 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground [writing-mode:vertical-rl]">
-            <div className="flex gap-8">
-              <span>Data</span>
-              <span>Signals</span>
-              <span>Evidence</span>
-              <span>Agent</span>
-            </div>
-          </nav>
-          <div className="grid place-items-center border-t border-border">
-            <div className="h-8 w-px bg-positive" />
-          </div>
-        </aside>
-
+      <div className="relative min-h-screen">
         <section className="grid min-h-screen grid-rows-[auto_1fr]">
-          <header className="grid gap-px border-b border-border bg-border md:grid-cols-[1fr_420px]">
-            <div className="bg-background/95 px-5 py-5 lg:px-8">
-              <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">Binance Agent OS Mini Hackathon / Read Only Intelligence</p>
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">Chaos Market AI</h1>
+          <header className="border-b border-border bg-background/95" data-market-header>
+            <div className="grid gap-px bg-border md:grid-cols-[1fr_420px]">
+              <div className="flex items-center gap-4 bg-background/95 px-5 py-5 lg:px-8">
+                <ChaosLogo size={40} />
+                <div>
+                  <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-muted-foreground">
+                    Binance Agent OS Mini Hackathon / Read Only Intelligence
+                  </p>
+                  <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">Chaos Market AI</h1>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-px bg-border">
+                <ChaosMetric label="Track" value="A" />
+                <ChaosMetric label="Deadline" value="SEP 08" />
+                <ChaosMetric label="Signal" value={result ? `${result.signal.score}/${maxSignalScore}` : "UNAVAILABLE"} />
+              </div>
             </div>
-            <div className="grid grid-cols-3 gap-px bg-border">
-              <ChaosMetric label="Track" value="A" />
-              <ChaosMetric label="Deadline" value="SEP 08" />
-              <ChaosMetric label="Signal" value={result ? `${result.signal.score}/${maxSignalScore}` : "UNAVAILABLE"} />
-            </div>
+
+            <AppNav />
           </header>
 
           <div className="grid grid-cols-1 gap-px bg-border xl:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)]">
@@ -57,7 +50,9 @@ export default async function Home() {
               <div className="grid gap-8 xl:grid-cols-[0.92fr_1fr] xl:items-end">
                 <div>
                   <p className="font-mono text-xs uppercase tracking-[0.26em] text-primary">Data first / Code second / AI last</p>
-                  <h2 className="mt-6 max-w-4xl text-5xl font-semibold leading-[0.9] tracking-[-0.075em] md:text-7xl xl:text-8xl">
+                  {/* Capped at 72px: DESIGN_SYSTEM.md §5 puts the hero at 48-72, and 96px wrapped
+                      this line into nine words stacked down the whole viewport. */}
+                  <h2 className="mt-6 max-w-3xl text-4xl font-semibold leading-[0.95] tracking-[-0.05em] md:text-6xl xl:text-7xl">
                     Do not ask AI what BTC is doing.
                     <span className="block text-muted-foreground">Make it inspect the market.</span>
                   </h2>

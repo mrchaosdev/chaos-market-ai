@@ -184,6 +184,8 @@ async function checkDemoFlow(browser: Browser) {
 
   await page.goto(`${baseUrl}/`, { waitUntil: "domcontentloaded" });
   await page.getByRole("heading", { name: /make it inspect the market/i }).waitFor({ timeout: 30_000 });
+  // The landing has its own header, so it can lose the nav without any /app page noticing.
+  await assertNavigable(page, "landing", null);
 
   await runAgentWorkflow(page);
 
@@ -209,6 +211,7 @@ async function captureResponsiveScreenshots(browser: Browser) {
     await page.goto(`${baseUrl}/app/analyze`, { waitUntil: "domcontentloaded" });
     await page.locator("canvas").first().waitFor({ timeout: 60_000 });
     await assertNoPageOverflow(page, `${viewport.name} /app/analyze`);
+    await assertNavigable(page, `${viewport.name} /app/analyze`, "analyze");
     await page.screenshot({ path: `test-results/analyze-${viewport.name}.png`, fullPage: true });
 
     await runAgentWorkflow(page);
@@ -257,6 +260,35 @@ async function assertEveryTraceRowVisible(page: Page, label: string) {
     hidden.length === 0,
     `${label} left ${hidden.length} trace row(s) invisible: ${hidden.map((row) => `${row.key}@${row.opacity}`).join(", ")}`,
   );
+}
+
+/**
+ * The workspace must be navigable at every width. The previous rail was
+ * `hidden lg:flex` and was the only navigation in the app, which left phones and
+ * tablets with zero reachable links — a page could only be opened by typing a URL.
+ */
+async function assertNavigable(page: Page, label: string, expectedActive: string | null) {
+  const nav = await page.evaluate(() => {
+    const links = [...document.querySelectorAll<HTMLAnchorElement>("[data-nav-item]")].filter(
+      (link) => link.getBoundingClientRect().width > 0,
+    );
+
+    return {
+      count: links.length,
+      active: links.filter((link) => link.dataset.navActive !== undefined).map((link) => link.dataset.navItem),
+    };
+  });
+
+  assert(nav.count >= 7, `${label} shows only ${nav.count} navigation links; every workspace screen must be reachable`);
+
+  if (expectedActive === null) {
+    // The landing is not a workspace screen, so nothing should claim to be current.
+    assert(nav.active.length === 0, `${label} marks ${nav.active.join(", ")} active, but no workspace screen is open`);
+    return;
+  }
+
+  assert(nav.active.length === 1, `${label} highlights ${nav.active.length} active nav items (${nav.active.join(", ")}), expected exactly one`);
+  assert(nav.active[0] === expectedActive, `${label} marks "${nav.active[0]}" active, expected "${expectedActive}"`);
 }
 
 async function assertNoPageOverflow(page: Page, label: string) {

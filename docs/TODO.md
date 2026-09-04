@@ -99,7 +99,8 @@
 - [x] `/app/agent` screen.
 - [x] `/app/analyze` screen.
 - [x] App shell.
-- [x] Compact nav rail.
+- [x] ~~Compact nav rail.~~ **Replaced by header navigation at the owner's direction.** *(`DESIGN_SYSTEM.md` §12 prescribes a compact nav rail; the owner chose a horizontal nav in the market context header instead. Recorded here because the design doc and the code now disagree on purpose, not by accident.)*
+- [x] Fix the workspace being unnavigable below 1024px. *(The rail was the only navigation in the app and was `hidden lg:flex`, so phones and tablets had zero reachable links — measured 0 at 390px and 768px, 7 at 1024px. Header nav now shows all 7 at every width, with an active state the rail never had.)*
 - [x] Market context header.
 - [x] Chaos primitives baseline.
 - [x] Polish `/app/overview`.
@@ -113,6 +114,7 @@
 - [x] Respect reduced motion for all animation.
 - [x] Add the `MarketPulse` sphere to the landing and overview surfaces. *(`DESIGN_SYSTEM.md` §15 forbids an "AI orb" or "glowing magic object" as agent identity, so the sphere is not the agent: it is a market instrument. Rate comes from the volatility class and volume state, amplitude from signal alignment, colour from trend — every animated parameter is deterministic and unit-tested in `src/lib/analysis/pulse.ts`. It carries its own readouts and a non-prediction disclaimer, and holds still under reduced motion. Canvas 2D, no new dependency.)*
 - [x] Use `public/img/logo.png` as the product mark in the nav rail, landing rail, mobile header, and generated app icons.
+- [x] Cap the landing hero at the documented type scale. *(It was `text-8xl` — 96px — against a 48-72px hero range in §5, which stacked the headline into nine lines and pushed the product panel below the fold.)*
 - [x] Mobile layout pass at 390px.
 - [x] Tablet layout pass at 768px.
 - [x] Desktop layout pass at 1024/1280/1440px.
