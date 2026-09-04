@@ -92,17 +92,17 @@ export function AgentWorkflow() {
   const runId = execution && "runId" in execution ? execution.runId : (liveTrace[0]?.runId ?? null);
 
   return (
-    <div className="grid gap-px bg-border xl:grid-cols-[minmax(460px,34%)_1fr]">
-      <section className="space-y-8 bg-background/95 p-5 lg:p-8">
+    <div className="cm-agent-workflow grid gap-px bg-border xl:grid-cols-[minmax(460px,34%)_1fr]">
+      <section className="cm-agent-workflow__controls space-y-8 bg-background/95 p-5 lg:p-8">
         <AgentSphere activity={activity} runId={runId} trace={trace} />
 
         <ChaosTerminalSurface>
-          <div className="p-5">
+          <div className="cm-agent-workflow__command p-5">
             <ChaosCommandInput disabled={state === "running"} onChange={setCommand} onSubmit={() => run(command)} value={command} />
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="cm-agent-workflow__examples mt-3 flex flex-wrap gap-2">
               {routedCommandExamples.map((example) => (
                 <button
-                  className="border border-border px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-surface-hover disabled:opacity-50"
+                  className="cm-agent-workflow__example border border-border px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-surface-hover disabled:opacity-50"
                   disabled={state === "running"}
                   key={example}
                   onClick={() => {
@@ -118,18 +118,18 @@ export function AgentWorkflow() {
           </div>
         </ChaosTerminalSurface>
 
-        <div>
+        <div className="cm-agent-workflow__trace">
           <AgentTrace events={trace} isRunning={state === "running"} runId={runId} />
         </div>
 
         {execution?.status === "success" ? (
-          <div className="mt-4">
+          <div className="cm-agent-workflow__feedback mt-4">
             <RunFeedback persistence={execution.persistence} runId={execution.runId} />
           </div>
         ) : null}
       </section>
 
-      <section className="bg-surface p-5 lg:p-8">
+      <section className="cm-agent-workflow__result bg-surface p-5 lg:p-8">
         {transportError ? (
           <ChaosDomainError
             error={{ code: "MARKET_DATA_ERROR", message: transportError, hint: "Check that the Next.js server is running and reachable." }}
@@ -151,19 +151,19 @@ export function AgentWorkflow() {
 
 function NotRouted({ execution, onPick }: { execution: Extract<AgentExecution, { status: "not_routed" }>; onPick: (command: string) => void }) {
   return (
-    <section className="border border-border bg-background">
-      <div className="border-b border-border px-4 py-3">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-warning">{execution.message}</p>
+    <section className="cm-not-routed border border-border bg-background">
+      <div className="cm-not-routed__header border-b border-border px-4 py-3">
+        <p className="cm-not-routed__title font-mono text-xs uppercase tracking-[0.2em] text-warning">{execution.message}</p>
       </div>
-      <div className="space-y-4 p-4">
-        <p className="text-sm leading-6 text-muted-foreground">
+      <div className="cm-not-routed__body space-y-4 p-4">
+        <p className="cm-not-routed__message text-sm leading-6 text-muted-foreground">
           <span className="font-mono text-foreground">{execution.command}</span> does not map to a V1 workflow. The agent does not fall back to a general
           chatbot.
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="cm-not-routed__suggestions flex flex-wrap gap-2">
           {execution.suggestions.map((suggestion) => (
             <button
-              className="border border-border px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-surface-hover"
+              className="cm-not-routed__suggestion border border-border px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:bg-surface-hover"
               key={suggestion}
               onClick={() => onPick(suggestion)}
               type="button"
@@ -185,16 +185,16 @@ function IdleState({ isRunning }: { isRunning: boolean }) {
   ];
 
   return (
-    <section className="border border-border bg-background">
-      <div className="border-b border-border px-4 py-3">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">{isRunning ? "Workflow running" : "No workflow executed"}</p>
+    <section className="cm-agent-idle border border-border bg-background">
+      <div className="cm-agent-idle__header border-b border-border px-4 py-3">
+        <p className="cm-agent-idle__title font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">{isRunning ? "Workflow running" : "No workflow executed"}</p>
       </div>
-      <div className="grid gap-px bg-border md:grid-cols-3">
+      <div className="cm-agent-idle__steps grid gap-px bg-border md:grid-cols-3">
         {steps.map((step) => (
-          <div className="bg-background p-4" key={step.index}>
-            <p className="font-mono text-xs text-subtle-foreground">{step.index}</p>
-            <p className="mt-6 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{step.label}</p>
-            <p className="mt-2 text-xs leading-5 text-subtle-foreground">{step.detail}</p>
+          <div className="cm-agent-idle__step bg-background p-4" key={step.index}>
+            <p className="cm-agent-idle__step-index font-mono text-xs text-subtle-foreground">{step.index}</p>
+            <p className="cm-agent-idle__step-label mt-6 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{step.label}</p>
+            <p className="cm-agent-idle__step-detail mt-2 text-xs leading-5 text-subtle-foreground">{step.detail}</p>
           </div>
         ))}
       </div>

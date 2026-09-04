@@ -110,15 +110,15 @@ export function MarketChart({ candles, support = null, resistance = null, height
   }, [candles, support, resistance, height]);
 
   return (
-    <div className="border border-border bg-background">
-      <div className="flex flex-wrap items-center gap-4 border-b border-border px-4 py-2">
+    <div className="cm-market-chart border border-border bg-background">
+      <div className="cm-market-chart__legend flex flex-wrap items-center gap-4 border-b border-border px-4 py-2">
         <Legend label="EMA20" tone="primary" />
         <Legend label="EMA50" tone="highlight" />
         <Legend label="Support" tone="positive" />
         <Legend label="Resistance" tone="negative" />
-        <span className="ml-auto font-mono text-[11px] uppercase tracking-[0.16em] text-subtle-foreground">Volume overlay</span>
+        <span className="cm-market-chart__volume-label ml-auto font-mono text-[11px] uppercase tracking-[0.16em] text-subtle-foreground">Volume overlay</span>
       </div>
-      <div className="w-full" ref={container} style={{ height }} />
+      <div className="cm-market-chart__canvas w-full" ref={container} style={{ height }} />
     </div>
   );
 }
@@ -132,8 +132,8 @@ function Legend({ label, tone }: { label: string; tone: "primary" | "highlight" 
   }[tone];
 
   return (
-    <span className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-      <span className={`inline-block h-px w-4 ${toneClass}`} />
+    <span className={`cm-market-chart__legend-item cm-market-chart__legend-item--${tone} flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground`}>
+      <span className={`cm-market-chart__legend-line inline-block h-px w-4 ${toneClass}`} />
       {label}
     </span>
   );

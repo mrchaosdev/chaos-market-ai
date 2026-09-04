@@ -82,25 +82,25 @@ export function AgentTrace({ events, runId, isRunning }: AgentTraceProps) {
     .filter((group) => group.rows.length > 0);
 
   return (
-    <div className="border border-border bg-background" ref={container}>
-      <div className="flex items-center justify-between gap-3 border-b border-border p-4">
-        <div>
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Chaos / {runId ?? "no run"}</p>
-          <h3 className="mt-2 text-xl font-semibold">Agent execution stream</h3>
+    <div className="cm-agent-trace border border-border bg-background" ref={container}>
+      <div className="cm-agent-trace__header flex items-center justify-between gap-3 border-b border-border p-4">
+        <div className="cm-agent-trace__heading">
+          <p className="cm-agent-trace__run-id font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Chaos / {runId ?? "no run"}</p>
+          <h3 className="cm-agent-trace__title mt-2 text-xl font-semibold">Agent execution stream</h3>
         </div>
-        <span className="border border-primary px-2 py-1 font-mono text-[11px] uppercase text-primary">{isRunning ? "Running" : "Read only"}</span>
+        <span className="cm-agent-trace__mode border border-primary px-2 py-1 font-mono text-[11px] uppercase text-primary">{isRunning ? "Running" : "Read only"}</span>
       </div>
 
       {events.length === 0 ? (
-        <p className="p-4 text-sm text-muted-foreground">
+        <p className="cm-agent-trace__empty p-4 text-sm text-muted-foreground">
           {isRunning ? "Workflow started. Trace rows appear as real steps complete." : "No workflow has been executed in this session yet."}
         </p>
       ) : (
-        <div className="divide-y divide-border">
+        <div className="cm-agent-trace__groups divide-y divide-border">
           {groups.map((group) => (
-            <div key={group.phase}>
-              <p className="bg-surface px-4 py-2 font-mono text-[11px] uppercase tracking-[0.2em] text-subtle-foreground">{phaseLabels[group.phase]}</p>
-              <div className="divide-y divide-border">
+            <div className="cm-agent-trace__group" key={group.phase}>
+              <p className="cm-agent-trace__phase bg-surface px-4 py-2 font-mono text-[11px] uppercase tracking-[0.2em] text-subtle-foreground">{phaseLabels[group.phase]}</p>
+              <div className="cm-agent-trace__rows divide-y divide-border">
                 {group.rows.map((event) => (
                   <TraceRow event={event} key={`${event.id}-${event.toolName ?? event.phase}-${event.createdAt}`} />
                 ))}
@@ -115,17 +115,17 @@ export function AgentTrace({ events, runId, isRunning }: AgentTraceProps) {
 
 function TraceRow({ event }: { event: AgentTraceEvent }) {
   return (
-    <div className="p-4" data-trace-key={`${event.runId}-${event.id}`} data-trace-row>
-      <div className="flex items-center gap-3">
-        <span className="w-6 shrink-0 font-mono text-xs text-subtle-foreground">{event.id}</span>
-        <span className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">{event.toolName ?? phaseLabels[event.phase]}</span>
+    <div className="cm-agent-trace-row p-4" data-trace-key={`${event.runId}-${event.id}`} data-trace-row>
+      <div className="cm-agent-trace-row__summary flex items-center gap-3">
+        <span className="cm-agent-trace-row__index w-6 shrink-0 font-mono text-xs text-subtle-foreground">{event.id}</span>
+        <span className="cm-agent-trace-row__tool min-w-0 flex-1 truncate font-mono text-xs text-foreground">{event.toolName ?? phaseLabels[event.phase]}</span>
         {event.latencyMs === undefined ? null : (
-          <span className="shrink-0 font-mono text-[11px] text-muted-foreground tabular">{event.latencyMs}ms</span>
+          <span className="cm-agent-trace-row__latency shrink-0 font-mono text-[11px] text-muted-foreground tabular">{event.latencyMs}ms</span>
         )}
         <ChaosStatus status={event.status} />
       </div>
       {event.inputSummary || event.outputSummary ? (
-        <p className="mt-2 pl-9 text-xs leading-5 text-muted-foreground">
+        <p className="cm-agent-trace-row__detail mt-2 pl-9 text-xs leading-5 text-muted-foreground">
           {event.inputSummary ? <span className="text-subtle-foreground">{event.inputSummary} · </span> : null}
           {event.outputSummary ?? ""}
         </p>

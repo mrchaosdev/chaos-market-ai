@@ -36,16 +36,16 @@ export const railThickness = 50;
 export function AppTopNav() {
   return (
     <>
-      <div aria-hidden className="h-5" />
-      <div className="sticky top-5 z-50 flex h-[50px] border-b border-t border-border bg-transparent" data-sticky-nav>
+      <div aria-hidden className="cm-top-nav__spacer h-5" />
+      <div className="cm-top-nav sticky top-5 z-50 flex h-[50px] border-b border-t border-border bg-transparent" data-sticky-nav>
         <Link
           aria-label="Chaos Market AI home"
-          className="flex w-[70px] shrink-0 items-center justify-center border-r border-border pl-5 transition-opacity hover:opacity-80"
+          className="cm-top-nav__home flex w-[70px] shrink-0 items-center justify-center border-r border-border pl-5 transition-opacity hover:opacity-80"
           href="/"
         >
           <ChaosLogo scrollAware size={30} />
         </Link>
-        <div className="flex min-w-0 flex-1 items-center px-5 lg:pr-8">
+        <div className="cm-top-nav__navigation flex min-w-0 flex-1 items-center px-5 lg:pr-8">
           <AppNav />
         </div>
       </div>

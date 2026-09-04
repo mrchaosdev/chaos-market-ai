@@ -220,10 +220,10 @@ export function ChaosSphere({
   }, [points, interactive, led]);
 
   return (
-    <div className="relative" style={{ height }}>
+    <div className="cm-sphere relative" style={{ height }}>
       <canvas
         aria-hidden
-        className={`block size-full ${interactive ? "cursor-grab touch-none active:cursor-grabbing" : ""}`}
+        className={`cm-sphere__canvas block size-full ${interactive ? "cursor-grab touch-none active:cursor-grabbing" : ""}`}
         ref={canvasRef}
       />
     </div>

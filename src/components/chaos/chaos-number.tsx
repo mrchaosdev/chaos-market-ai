@@ -6,5 +6,5 @@ export function ChaosNumber({ value, tone = "default" }: { value: string; tone?:
     primary: "text-primary",
   }[tone];
 
-  return <span className={`font-mono tabular ${className}`}>{value}</span>;
+  return <span className={`cm-number cm-number--${tone} font-mono tabular ${className}`}>{value}</span>;
 }

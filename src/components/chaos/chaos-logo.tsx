@@ -21,11 +21,11 @@ export function ChaosLogo({ size = 28, withWordmark = false, className = "", scr
   const scrolled = useScrolled(scrollAware);
 
   return (
-    <span className={`inline-flex items-center gap-3 ${className}`}>
-      <span className="relative inline-block shrink-0" style={{ width: size, height: size }}>
+    <span className={`cm-logo inline-flex items-center gap-3 ${className}`}>
+      <span className="cm-logo__mark relative inline-block shrink-0" style={{ width: size, height: size }}>
         <Image
           alt="Chaos Market AI"
-          className={`object-contain transition-opacity duration-300 ${scrolled ? "opacity-0" : "opacity-100"}`}
+          className={`cm-logo__image cm-logo__image--color object-contain transition-opacity duration-300 ${scrolled ? "opacity-0" : "opacity-100"}`}
           fill
           priority
           sizes={`${size}px`}
@@ -35,7 +35,7 @@ export function ChaosLogo({ size = 28, withWordmark = false, className = "", scr
           <Image
             alt=""
             aria-hidden
-            className={`object-contain transition-opacity duration-300 ${scrolled ? "opacity-100" : "opacity-0"}`}
+            className={`cm-logo__image cm-logo__image--white object-contain transition-opacity duration-300 ${scrolled ? "opacity-100" : "opacity-0"}`}
             fill
             sizes={`${size}px`}
             src="/img/logowrmbg.png"
@@ -43,7 +43,7 @@ export function ChaosLogo({ size = 28, withWordmark = false, className = "", scr
         ) : null}
       </span>
       {withWordmark ? (
-        <span className="font-mono text-xs font-semibold uppercase tracking-[0.24em] text-foreground">Chaos Market AI</span>
+        <span className="cm-logo__wordmark font-mono text-xs font-semibold uppercase tracking-[0.24em] text-foreground">Chaos Market AI</span>
       ) : null}
     </span>
   );

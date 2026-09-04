@@ -16,7 +16,7 @@ export default async function AppPage() {
   if (!outcome.ok) {
     return (
       <AppShell>
-        <section className="bg-background p-5 lg:p-8">
+        <section className="cm-page cm-page--overview cm-page--error bg-background p-5 lg:p-8">
           <ChaosDomainError error={outcome.error} runId={outcome.runId} />
         </section>
       </AppShell>
@@ -28,12 +28,12 @@ export default async function AppPage() {
 
   return (
     <AppShell>
-      <div className="grid flex-1 grid-cols-1 gap-px bg-border xl:grid-cols-[1fr_380px]">
-        <section className="space-y-4 bg-background p-5 lg:p-8">
+      <div className="cm-overview-page grid flex-1 grid-cols-1 gap-px bg-border xl:grid-cols-[1fr_380px]">
+        <section className="cm-overview-page__main space-y-4 bg-background p-5 lg:p-8">
           <WorkflowMetaBar meta={result.meta} runId={result.runId} workflow={result.workflow} />
           <OverviewPanel result={result} />
         </section>
-        <section className="space-y-4 bg-surface p-5 lg:p-8">
+        <section className="cm-overview-page__aside space-y-4 bg-surface p-5 lg:p-8">
           <MarketWatch analyses={result.analyses} />
           {primary ? (
             <MarketPulse

@@ -15,10 +15,10 @@ export default function SettingsPage() {
 
   return (
     <AppShell>
-      <section className="space-y-px bg-border">
-        <div className="bg-background p-5 lg:p-8">
+      <section className="cm-page cm-page--settings space-y-px bg-border">
+        <div className="cm-settings__runtime bg-background p-5 lg:p-8">
           <ChaosPanel meta="SERVER ONLY" title="Runtime Configuration">
-            <div className="grid gap-px bg-border md:grid-cols-2">
+            <div className="cm-settings__runtime-grid grid gap-px bg-border md:grid-cols-2">
               <Row label="Market provider" value={marketProvider.label} status={marketProvider.isDemo ? "warning" : "success"} />
               <Row label="AI provider" value={ai.name} status={ai.isFallback ? "warning" : "success"} />
               <Row label="AI model" value={ai.model} status="queued" />
@@ -29,9 +29,9 @@ export default function SettingsPage() {
           </ChaosPanel>
         </div>
 
-        <div className="bg-background p-5 lg:p-8">
+        <div className="cm-settings__safety bg-background p-5 lg:p-8">
           <ChaosPanel meta="READ ONLY" title="Safety Posture">
-            <ul className="space-y-3 text-sm leading-6 text-muted-foreground">
+            <ul className="cm-settings__safety-list space-y-3 text-sm leading-6 text-muted-foreground">
               <li>No trading API keys are read, stored, or required.</li>
               <li>No order, cancel, or withdrawal route exists in this application.</li>
               <li>
@@ -48,10 +48,10 @@ export default function SettingsPage() {
 
 function Row({ label, value, status }: { label: string; value: string; status: "success" | "warning" | "queued" }) {
   return (
-    <div className="flex items-center justify-between gap-3 bg-background p-4">
-      <div>
-        <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-        <p className="mt-2 font-mono text-sm text-foreground">{value}</p>
+    <div className="cm-settings-row flex items-center justify-between gap-3 bg-background p-4">
+      <div className="cm-settings-row__content">
+        <p className="cm-settings-row__label font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+        <p className="cm-settings-row__value mt-2 font-mono text-sm text-foreground">{value}</p>
       </div>
       <ChaosStatus status={status} />
     </div>

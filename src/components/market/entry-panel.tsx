@@ -7,13 +7,13 @@ export function EntryPanel({ result }: { result: EntryAnalysisResult }) {
   const { entry } = result;
 
   return (
-    <div className="space-y-px bg-border">
-      <section className="bg-background p-4 md:p-5">
-        <p className="font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">
+    <div className="cm-entry-panel space-y-px bg-border">
+      <section className="cm-entry-panel__summary bg-background p-4 md:p-5">
+        <p className="cm-entry-panel__title font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">
           Entry-area structure · {result.symbol} · {result.timeframe.toUpperCase()}
         </p>
 
-        <div className="mt-5 grid gap-px bg-border md:grid-cols-2 xl:grid-cols-4">
+        <div className="cm-entry-panel__fields mt-5 grid gap-px bg-border md:grid-cols-2 xl:grid-cols-4">
           <Field label="Current structure" value={entry.currentStructure} />
           <Field label="Current price" value={formatNumber(entry.currentPrice, 2)} />
           <Field
@@ -27,21 +27,21 @@ export function EntryPanel({ result }: { result: EntryAnalysisResult }) {
           <Field label="Signal alignment" value={`${entry.signalAlignment} / ${maxSignalScore}`} />
         </div>
 
-        <div className="mt-5 border border-border bg-surface p-4">
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Evidence</p>
-          <div className="mt-4 space-y-3">
+        <div className="cm-entry-panel__evidence mt-5 border border-border bg-surface p-4">
+          <p className="cm-entry-panel__evidence-title font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Evidence</p>
+          <div className="cm-entry-panel__evidence-list mt-4 space-y-3">
             {entry.evidence.map((item, index) => (
-              <div className="grid grid-cols-[34px_1fr] gap-3 text-sm" key={item}>
+              <div className="cm-entry-panel__evidence-item grid grid-cols-[34px_1fr] gap-3 text-sm" key={item}>
                 <span className="font-mono text-xs text-subtle-foreground">{String(index + 1).padStart(2, "0")}</span>
                 <span className="text-muted-foreground">{item}</span>
               </div>
             ))}
           </div>
-          <p className="mt-5 border-t border-border pt-4 text-xs text-subtle-foreground">{entry.disclaimer}</p>
+          <p className="cm-entry-panel__disclaimer mt-5 border-t border-border pt-4 text-xs text-subtle-foreground">{entry.disclaimer}</p>
         </div>
       </section>
 
-      <section className="bg-background">
+      <section className="cm-entry-panel__analysis bg-background">
         <MarketAnalysisPanel analysis={result} />
       </section>
     </div>
@@ -50,9 +50,9 @@ export function EntryPanel({ result }: { result: EntryAnalysisResult }) {
 
 function Field({ label, value, tone = "default" }: { label: string; value: string; tone?: "default" | "warning" }) {
   return (
-    <div className="bg-background p-4">
-      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-      <p className={`mt-2 font-mono text-sm capitalize tabular ${tone === "warning" ? "text-warning" : "text-foreground"}`}>{value}</p>
+    <div className="cm-entry-field bg-background p-4">
+      <p className="cm-entry-field__label font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+      <p className={`cm-entry-field__value mt-2 font-mono text-sm capitalize tabular ${tone === "warning" ? "text-warning" : "text-foreground"}`}>{value}</p>
     </div>
   );
 }

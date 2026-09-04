@@ -13,29 +13,29 @@ export function MarketAnalysisPanel({ analysis, showChart = true }: MarketAnalys
   const evidence = buildEvidence(analysis);
 
   return (
-    <div className="grid gap-px bg-border xl:grid-cols-[1.25fr_0.75fr]">
-      <div className="bg-surface p-4 md:p-5">
-        <div className="grid gap-px bg-border md:grid-cols-[1fr_170px]">
-          <div className="bg-background p-4">
-            <p className="font-mono text-xs uppercase tracking-[0.24em] text-muted-foreground">
+    <div className="cm-analysis grid gap-px bg-border xl:grid-cols-[1.25fr_0.75fr]">
+      <div className="cm-analysis__market bg-surface p-4 md:p-5">
+        <div className="cm-analysis__headline grid gap-px bg-border md:grid-cols-[1fr_170px]">
+          <div className="cm-analysis__price-card bg-background p-4">
+            <p className="cm-analysis__symbol font-mono text-xs uppercase tracking-[0.24em] text-muted-foreground">
               {analysis.market.ticker.symbol} · {analysis.timeframe.toUpperCase()}
             </p>
-            <p className="mt-4 font-mono text-5xl tracking-[-0.06em] tabular">{formatNumber(analysis.market.ticker.price)}</p>
+            <p className="cm-analysis__price mt-4 font-mono text-5xl tracking-[-0.06em] tabular">{formatNumber(analysis.market.ticker.price)}</p>
           </div>
-          <div className="bg-background p-4">
-            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Signal Alignment</p>
-            <p className="mt-4 font-mono text-4xl text-primary tabular">{analysis.signal.score}</p>
-            <p className="mt-1 font-mono text-xs text-muted-foreground">/ {maxSignalScore} · not a probability</p>
+          <div className="cm-analysis__signal-card bg-background p-4">
+            <p className="cm-analysis__signal-label font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Signal Alignment</p>
+            <p className="cm-analysis__signal-score mt-4 font-mono text-4xl text-primary tabular">{analysis.signal.score}</p>
+            <p className="cm-analysis__signal-max mt-1 font-mono text-xs text-muted-foreground">/ {maxSignalScore} · not a probability</p>
           </div>
         </div>
 
         {showChart ? (
-          <div className="mt-5">
+          <div className="cm-analysis__chart mt-5">
             <MarketChart candles={analysis.market.candles} resistance={analysis.structure.resistance} support={analysis.structure.support} />
           </div>
         ) : null}
 
-        <div className="mt-5 grid gap-px bg-border grid-cols-2 md:grid-cols-4">
+        <div className="cm-analysis__indicators mt-5 grid gap-px bg-border grid-cols-2 md:grid-cols-4">
           <Cell label="RSI" value={formatNullable(analysis.indicators.rsi, 1)} />
           <Cell label="EMA20" value={formatNullable(analysis.indicators.ema20, 2)} />
           <Cell label="EMA50" value={formatNullable(analysis.indicators.ema50, 2)} />
@@ -50,9 +50,9 @@ export function MarketAnalysisPanel({ analysis, showChart = true }: MarketAnalys
           />
         </div>
 
-        <div className="mt-5 border border-border bg-background p-4">
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Signal Components</p>
-          <div className="mt-4 space-y-3">
+        <div className="cm-analysis__signal-components mt-5 border border-border bg-background p-4">
+          <p className="cm-analysis__signal-components-title font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Signal Components</p>
+          <div className="cm-analysis__signal-components-list mt-4 space-y-3">
             {Object.entries(analysis.signal.components).map(([component, value]) => (
               <ComponentBar
                 key={component}
@@ -65,12 +65,12 @@ export function MarketAnalysisPanel({ analysis, showChart = true }: MarketAnalys
         </div>
       </div>
 
-      <div className="bg-background p-4 md:p-5">
-        <div className="grid gap-px bg-border">
-          <section className="bg-surface p-4">
-            <p className="font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">Market Structure</p>
-            <p className="mt-5 text-3xl font-semibold capitalize tracking-[-0.04em]">{analysis.signal.bias.replaceAll("-", " ")}</p>
-            <dl className="mt-4 grid grid-cols-2 gap-3 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+      <div className="cm-analysis__insight bg-background p-4 md:p-5">
+        <div className="cm-analysis__insight-grid grid gap-px bg-border">
+          <section className="cm-analysis__structure bg-surface p-4">
+            <p className="cm-analysis__section-title font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">Market Structure</p>
+            <p className="cm-analysis__bias mt-5 text-3xl font-semibold capitalize tracking-[-0.04em]">{analysis.signal.bias.replaceAll("-", " ")}</p>
+            <dl className="cm-analysis__definitions mt-4 grid grid-cols-2 gap-3 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
               <Definition label="Trend" value={analysis.structure.trend} />
               <Definition label="Momentum" value={analysis.structure.momentum} />
               <Definition label="Volatility" value={analysis.structure.volatility} />
@@ -78,11 +78,11 @@ export function MarketAnalysisPanel({ analysis, showChart = true }: MarketAnalys
             </dl>
           </section>
 
-          <section className="bg-surface p-4">
-            <p className="font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">Evidence</p>
-            <div className="mt-5 space-y-3">
+          <section className="cm-analysis__evidence bg-surface p-4">
+            <p className="cm-analysis__section-title font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">Evidence</p>
+            <div className="cm-analysis__evidence-list mt-5 space-y-3">
               {evidence.map((item, index) => (
-                <div className="grid grid-cols-[34px_1fr] gap-3 text-sm" key={item}>
+                <div className="cm-analysis__evidence-item grid grid-cols-[34px_1fr] gap-3 text-sm" key={item}>
                   <span className="font-mono text-xs text-subtle-foreground">{String(index + 1).padStart(2, "0")}</span>
                   <span className="text-muted-foreground">{item}</span>
                 </div>
@@ -90,33 +90,33 @@ export function MarketAnalysisPanel({ analysis, showChart = true }: MarketAnalys
             </div>
           </section>
 
-          <section className="bg-surface p-4">
-            <p className="font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">Interpretation</p>
+          <section className="cm-analysis__interpretation bg-surface p-4">
+            <p className="cm-analysis__section-title font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">Interpretation</p>
             {analysis.aiDegraded ? (
-              <p className="mt-3 border border-warning px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-warning">
+              <p className="cm-analysis__degraded mt-3 border border-warning px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-warning">
                 Provider degraded · deterministic interpretation
               </p>
             ) : null}
-            <p className="mt-4 text-sm leading-6 text-foreground">{analysis.ai.summary}</p>
-            <div className="mt-4 space-y-2">
+            <p className="cm-analysis__summary mt-4 text-sm leading-6 text-foreground">{analysis.ai.summary}</p>
+            <div className="cm-analysis__observations mt-4 space-y-2">
               {analysis.ai.observations.map((observation) => (
-                <p className="text-sm leading-6 text-muted-foreground" key={observation}>
+                <p className="cm-analysis__observation text-sm leading-6 text-muted-foreground" key={observation}>
                   {observation}
                 </p>
               ))}
             </div>
           </section>
 
-          <section className="bg-surface p-4">
-            <p className="font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">Risk</p>
-            <div className="mt-4 space-y-2">
+          <section className="cm-analysis__risk bg-surface p-4">
+            <p className="cm-analysis__section-title font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground">Risk</p>
+            <div className="cm-analysis__risk-list mt-4 space-y-2">
               {analysis.ai.risks.map((risk) => (
-                <p className="text-sm leading-6 text-muted-foreground" key={risk}>
+                <p className="cm-analysis__risk-item text-sm leading-6 text-muted-foreground" key={risk}>
                   - {risk}
                 </p>
               ))}
             </div>
-            <p className="mt-5 border-t border-border pt-4 text-xs text-subtle-foreground">{analysis.ai.conclusion}</p>
+            <p className="cm-analysis__conclusion mt-5 border-t border-border pt-4 text-xs text-subtle-foreground">{analysis.ai.conclusion}</p>
           </section>
         </div>
       </div>
@@ -128,16 +128,16 @@ function Cell({ label, value, tone = "default" }: { label: string; value: string
   const toneClass = tone === "positive" ? "text-positive" : tone === "negative" ? "text-negative" : "text-foreground";
 
   return (
-    <div className="bg-background p-4">
-      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-      <p className={`mt-2 font-mono text-sm tabular ${toneClass}`}>{value}</p>
+    <div className="cm-analysis-cell bg-background p-4">
+      <p className="cm-analysis-cell__label font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+      <p className={`cm-analysis-cell__value mt-2 font-mono text-sm tabular ${toneClass}`}>{value}</p>
     </div>
   );
 }
 
 function Definition({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <div className="cm-analysis-definition">
       <dt className="text-subtle-foreground">{label}</dt>
       <dd className="mt-1 text-foreground">{value}</dd>
     </div>
@@ -146,12 +146,12 @@ function Definition({ label, value }: { label: string; value: string }) {
 
 function ComponentBar({ label, value, max }: { label: string; value: number; max: number }) {
   return (
-    <div className="grid grid-cols-[92px_1fr_48px] items-center gap-3">
-      <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{label}</span>
-      <span className="h-1.5 bg-surface-raised">
-        <span className="block h-full bg-primary" style={{ width: `${Math.round((value / max) * 100)}%` }} />
+    <div className="cm-component-bar grid grid-cols-[92px_1fr_48px] items-center gap-3">
+      <span className="cm-component-bar__label font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{label}</span>
+      <span className="cm-component-bar__track h-1.5 bg-surface-raised">
+        <span className="cm-component-bar__fill block h-full bg-primary" style={{ width: `${Math.round((value / max) * 100)}%` }} />
       </span>
-      <span className="text-right font-mono text-[11px] text-muted-foreground tabular">
+      <span className="cm-component-bar__value text-right font-mono text-[11px] text-muted-foreground tabular">
         {value}/{max}
       </span>
     </div>

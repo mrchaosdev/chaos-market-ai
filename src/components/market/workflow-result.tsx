@@ -30,11 +30,11 @@ export function WorkflowResult({ result }: { result: AgentWorkflowResult }) {
   );
 
   return (
-    <div className="space-y-4" ref={container}>
-      <div data-reveal-meta>
+    <div className="cm-workflow-result space-y-4" ref={container}>
+      <div className="cm-workflow-result__meta" data-reveal-meta>
         <WorkflowMetaBar meta={result.meta} runId={result.runId} workflow={result.workflow} />
       </div>
-      <div data-reveal-body>{renderBody(result)}</div>
+      <div className="cm-workflow-result__body" data-reveal-body>{renderBody(result)}</div>
     </div>
   );
 }

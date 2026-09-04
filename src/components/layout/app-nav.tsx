@@ -81,14 +81,14 @@ export function AppNav() {
   return (
     <nav
       aria-label="Workspace"
-      className="relative flex w-full items-center justify-start gap-7 overflow-x-auto sm:justify-center"
+      className="cm-app-nav relative flex w-full items-center justify-start gap-7 overflow-x-auto sm:justify-center"
       data-app-nav
       onMouseLeave={() => moveIndicator(null)}
       ref={navRef}
     >
       <span
         aria-hidden
-        className="pointer-events-none absolute bottom-0 left-0 h-0.5 w-0 bg-foreground/35 opacity-0"
+        className="cm-app-nav__hover-indicator pointer-events-none absolute bottom-0 left-0 h-0.5 w-0 bg-foreground/35 opacity-0"
         ref={indicatorRef}
       />
 
@@ -117,7 +117,7 @@ function NavItem({
   return (
     <Link
       aria-current={active ? "page" : undefined}
-      className={`relative shrink-0 whitespace-nowrap py-2 text-sm transition-colors ${
+      className={`cm-app-nav__item cm-app-nav__item--${label.toLowerCase()} relative shrink-0 whitespace-nowrap py-2 text-sm transition-colors ${
         active ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground"
       } ${className}`}
       data-nav-active={active || undefined}
@@ -126,7 +126,7 @@ function NavItem({
       onMouseEnter={(event) => onHover(event.currentTarget)}
     >
       {label}
-      {active ? <span aria-hidden className="absolute inset-x-0 bottom-0 h-0.5 bg-primary" /> : null}
+      {active ? <span aria-hidden className="cm-app-nav__active-indicator absolute inset-x-0 bottom-0 h-0.5 bg-primary" /> : null}
     </Link>
   );
 }

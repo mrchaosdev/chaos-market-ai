@@ -25,7 +25,7 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
   if (!outcome.ok) {
     return (
       <AppShell>
-        <section className="bg-background p-5 lg:p-8">
+        <section className="cm-page cm-page--entry cm-page--error bg-background p-5 lg:p-8">
           <ChaosDomainError error={outcome.error} runId={outcome.runId} />
         </section>
       </AppShell>
@@ -34,7 +34,7 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
 
   return (
     <AppShell>
-      <section className="space-y-4 bg-background p-5 lg:p-8">
+      <section className="cm-page cm-page--entry space-y-4 bg-background p-5 lg:p-8">
         <WorkflowMetaBar meta={outcome.data.meta} runId={outcome.data.runId} workflow={outcome.data.workflow} />
         <EntryPanel result={outcome.data} />
       </section>

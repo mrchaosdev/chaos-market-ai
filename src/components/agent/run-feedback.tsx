@@ -29,14 +29,14 @@ export function RunFeedback({ runId, persistence }: RunFeedbackProps) {
   }
 
   return (
-    <div className="border border-border bg-background p-4">
-      <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Run feedback</p>
-      <p className="mt-2 text-xs leading-5 text-subtle-foreground">{persistence.message}</p>
+    <div className="cm-run-feedback border border-border bg-background p-4">
+      <p className="cm-run-feedback__title font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Run feedback</p>
+      <p className="cm-run-feedback__message mt-2 text-xs leading-5 text-subtle-foreground">{persistence.message}</p>
 
       {persistence.persisted ? (
-        <div className="mt-4 flex items-center gap-2">
+        <div className="cm-run-feedback__actions mt-4 flex items-center gap-2">
           <button
-            className="flex items-center gap-2 border border-border px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:bg-surface-hover disabled:opacity-50"
+            className="cm-run-feedback__button cm-run-feedback__button--useful flex items-center gap-2 border border-border px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:bg-surface-hover disabled:opacity-50"
             disabled={state === "sending" || state === "sent"}
             onClick={() => send(true)}
             type="button"
@@ -45,7 +45,7 @@ export function RunFeedback({ runId, persistence }: RunFeedbackProps) {
             Useful
           </button>
           <button
-            className="flex items-center gap-2 border border-border px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:bg-surface-hover disabled:opacity-50"
+            className="cm-run-feedback__button cm-run-feedback__button--not-useful flex items-center gap-2 border border-border px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:bg-surface-hover disabled:opacity-50"
             disabled={state === "sending" || state === "sent"}
             onClick={() => send(false)}
             type="button"
@@ -53,8 +53,8 @@ export function RunFeedback({ runId, persistence }: RunFeedbackProps) {
             <ThumbsDown aria-hidden className="size-3.5" />
             Not useful
           </button>
-          {state === "sent" ? <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-positive">Recorded</span> : null}
-          {state === "failed" ? <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-negative">Not recorded</span> : null}
+          {state === "sent" ? <span className="cm-run-feedback__status cm-run-feedback__status--sent font-mono text-[11px] uppercase tracking-[0.14em] text-positive">Recorded</span> : null}
+          {state === "failed" ? <span className="cm-run-feedback__status cm-run-feedback__status--failed font-mono text-[11px] uppercase tracking-[0.14em] text-negative">Not recorded</span> : null}
         </div>
       ) : null}
     </div>

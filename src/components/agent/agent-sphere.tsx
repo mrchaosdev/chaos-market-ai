@@ -20,10 +20,10 @@ export function AgentSphere({ activity, trace, runId }: AgentSphereProps) {
   const vitals = deriveAgentVitals(activity, trace);
 
   return (
-    <section className="border border-border bg-background" data-agent-sphere data-agent-state={vitals.state.toLowerCase()}>
-      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Chaos Agent</p>
-        <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-subtle-foreground">{runId ?? "no run"}</span>
+    <section className="cm-agent-sphere border border-border bg-background" data-agent-sphere data-agent-state={vitals.state.toLowerCase()}>
+      <div className="cm-agent-sphere__header flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+        <p className="cm-agent-sphere__title font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">Chaos Agent</p>
+        <span className="cm-agent-sphere__run-id font-mono text-[11px] uppercase tracking-[0.14em] text-subtle-foreground">{runId ?? "no run"}</span>
       </div>
 
       <ChaosSphere
@@ -38,20 +38,20 @@ export function AgentSphere({ activity, trace, runId }: AgentSphereProps) {
         tone={vitals.tone}
       />
 
-      <dl className="grid grid-cols-2 gap-px border-t border-border bg-border">
-        <div className="bg-background px-4 py-3">
+      <dl className="cm-agent-sphere__vitals grid grid-cols-2 gap-px border-t border-border bg-border">
+        <div className="cm-agent-sphere__vital cm-agent-sphere__vital--state bg-background px-4 py-3">
           <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">State</dt>
           <dd className={`mt-2 font-mono text-sm ${toneClass(vitals.tone)}`} data-agent-state-label>
             {vitals.state}
           </dd>
         </div>
-        <div className="bg-background px-4 py-3">
+        <div className="cm-agent-sphere__vital cm-agent-sphere__vital--rate bg-background px-4 py-3">
           <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Rate</dt>
           <dd className="mt-2 font-mono text-sm tabular text-foreground">{vitals.bpm} BPM</dd>
         </div>
       </dl>
 
-      <p className="border-t border-border px-4 py-3 text-xs leading-5 text-muted-foreground">{vitals.detail}</p>
+      <p className="cm-agent-sphere__detail border-t border-border px-4 py-3 text-xs leading-5 text-muted-foreground">{vitals.detail}</p>
     </section>
   );
 }

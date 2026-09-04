@@ -74,7 +74,7 @@ export function ChaosScrollbar() {
 
   return (
     <div
-      className="fixed inset-y-0 left-5 z-40 hidden w-[50px] cursor-pointer touch-none overflow-hidden border-x border-border bg-surface opacity-0 transition-opacity sm:block"
+      className="cm-scrollbar fixed inset-y-0 left-5 z-40 hidden w-[50px] cursor-pointer touch-none overflow-hidden border-x border-border bg-surface opacity-0 transition-opacity sm:block"
       data-scroll-progress="0"
       data-scrollbar
       onPointerDown={(event) => {
@@ -93,7 +93,7 @@ export function ChaosScrollbar() {
       }}
       ref={trackRef}
     >
-      <div className="w-full bg-foreground/90" data-scrollbar-fill ref={fillRef} style={{ height: 0 }} />
+      <div className="cm-scrollbar__fill w-full bg-foreground/90" data-scrollbar-fill ref={fillRef} style={{ height: 0 }} />
     </div>
   );
 }

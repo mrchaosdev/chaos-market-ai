@@ -25,7 +25,7 @@ export default async function AnalyzePage({ searchParams }: AnalyzePageProps) {
   if (!outcome.ok) {
     return (
       <AppShell>
-        <section className="bg-background p-5 lg:p-8">
+        <section className="cm-page cm-page--analyze cm-page--error bg-background p-5 lg:p-8">
           <ChaosDomainError error={outcome.error} runId={outcome.runId} />
         </section>
       </AppShell>
@@ -34,7 +34,7 @@ export default async function AnalyzePage({ searchParams }: AnalyzePageProps) {
 
   return (
     <AppShell>
-      <section className="space-y-4 bg-background p-5 lg:p-8">
+      <section className="cm-page cm-page--analyze space-y-4 bg-background p-5 lg:p-8">
         <WorkflowMetaBar meta={outcome.data.meta} runId={outcome.data.runId} workflow={outcome.data.workflow} />
         <MarketAnalysisPanel analysis={outcome.data} />
       </section>

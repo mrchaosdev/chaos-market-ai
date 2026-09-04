@@ -9,5 +9,5 @@ export function ChaosStatus({ status }: { status: ChaosStatusTone }) {
     error: "text-negative border-negative",
   }[status];
 
-  return <span className={`shrink-0 whitespace-nowrap border px-2 py-1 font-mono text-[11px] uppercase ${className}`}>{status}</span>;
+  return <span className={`cm-status cm-status--${status} shrink-0 whitespace-nowrap border px-2 py-1 font-mono text-[11px] uppercase ${className}`}>{status}</span>;
 }
