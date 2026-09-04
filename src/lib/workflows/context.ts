@@ -1,6 +1,6 @@
 import { createAIProvider, createFallbackAIProvider } from "@/lib/ai/factory";
 import type { AIProvider } from "@/lib/ai/provider";
-import { createRunId, TraceRecorder, type AgentTraceEvent } from "@/lib/agent/events";
+import { createRunId, TraceRecorder, type AgentTraceEvent, type TraceListener } from "@/lib/agent/events";
 import { getMarketProviderDescriptor, type MarketProviderDescriptor } from "@/lib/market/factory";
 import { ChaosError, toChaosError } from "@/lib/utils/errors";
 
@@ -23,9 +23,14 @@ export type WorkflowContext = {
   startedAt: number;
 };
 
-export function createWorkflowContext(workflow: WorkflowName, runIdPrefix: string): WorkflowContext {
+/** Every workflow entry point accepts this, so any of them can be streamed. */
+export type WorkflowOptions = {
+  onEvent?: TraceListener;
+};
+
+export function createWorkflowContext(workflow: WorkflowName, runIdPrefix: string, options: WorkflowOptions = {}): WorkflowContext {
   return {
-    recorder: new TraceRecorder(createRunId(runIdPrefix), workflow),
+    recorder: new TraceRecorder(createRunId(runIdPrefix), workflow, options.onEvent),
     ai: createAIProvider(),
     fallbackAi: createFallbackAIProvider(),
     dataProvider: getMarketProviderDescriptor(),

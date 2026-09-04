@@ -1,4 +1,4 @@
-import type { AgentTraceEvent } from "@/lib/agent/events";
+import type { AgentTraceEvent, TraceListener } from "@/lib/agent/events";
 import { createMarketDataProvider } from "@/lib/market/factory";
 import type { Timeframe } from "@/lib/market/types";
 import { saveAnalysisRun, type PersistenceStatus } from "@/lib/db/queries";
@@ -41,7 +41,11 @@ export type AgentExecution =
       persistence: PersistenceStatus;
     };
 
-export async function executeAgentCommand(command: string): Promise<AgentExecution> {
+export type ExecuteOptions = {
+  onEvent?: TraceListener;
+};
+
+export async function executeAgentCommand(command: string, options: ExecuteOptions = {}): Promise<AgentExecution> {
   const startedAt = Date.now();
   const intent = routeAgentIntent(command);
 
@@ -61,7 +65,7 @@ export async function executeAgentCommand(command: string): Promise<AgentExecuti
   const symbols = parseSymbols(command);
 
   try {
-    const result = await runWorkflow(intent, symbols, timeframe);
+    const result = await runWorkflow(intent, symbols, timeframe, options);
     const trace = [buildIntentEvent(result.runId, result.workflow, command, intent, startedAt), ...result.trace];
     const persistence = await persist(command, result, trace, startedAt);
     logRun({
@@ -126,23 +130,23 @@ export async function executeAgentCommand(command: string): Promise<AgentExecuti
   }
 }
 
-async function runWorkflow(intent: Exclude<AgentIntent, "UNKNOWN">, symbols: string[], timeframe: Timeframe): Promise<AgentWorkflowResult> {
+async function runWorkflow(intent: Exclude<AgentIntent, "UNKNOWN">, symbols: string[], timeframe: Timeframe, options: ExecuteOptions): Promise<AgentWorkflowResult> {
   const provider = createMarketDataProvider();
 
   if (intent === "MARKET_OVERVIEW") {
-    return marketOverviewWorkflow(provider, timeframe);
+    return marketOverviewWorkflow(provider, timeframe, options);
   }
 
   if (intent === "COMPARE_ASSETS") {
     const pair = symbols.length >= 2 ? symbols.slice(0, 3) : ["BTCUSDT", "ETHUSDT"];
-    return compareAssetsWorkflow(provider, pair, timeframe);
+    return compareAssetsWorkflow(provider, pair, timeframe, options);
   }
 
   if (intent === "ENTRY_ANALYSIS") {
-    return entryAnalysisWorkflow(provider, symbols[0] ?? "BTCUSDT", timeframe);
+    return entryAnalysisWorkflow(provider, symbols[0] ?? "BTCUSDT", timeframe, options);
   }
 
-  return analyzeAssetWorkflow(provider, { symbol: symbols[0] ?? "BTCUSDT", timeframe: timeframe ?? defaultTimeframe });
+  return analyzeAssetWorkflow(provider, { symbol: symbols[0] ?? "BTCUSDT", timeframe: timeframe ?? defaultTimeframe }, options);
 }
 
 async function persist(command: string, result: AgentWorkflowResult, trace: AgentTraceEvent[], startedAt: number) {

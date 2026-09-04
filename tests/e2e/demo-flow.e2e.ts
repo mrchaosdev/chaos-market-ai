@@ -14,13 +14,71 @@ async function main() {
 
   try {
     await checkDemoFlow(browser);
+    await checkStreamingTransport(browser);
     await checkMarketPulse(browser);
     await checkReducedMotion(browser);
     await captureResponsiveScreenshots(browser);
-    console.log("e2e: demo flow, market pulse, reduced motion and responsive capture passed");
+    console.log("e2e: demo flow, streaming, market pulse, reduced motion and responsive capture passed");
   } finally {
     await browser.close();
   }
+}
+
+/** `/api/chat` must deliver trace events as they happen, not buffer them into one lump. */
+async function checkStreamingTransport(browser: Browser) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.goto(`${baseUrl}/app/agent`, { waitUntil: "domcontentloaded" });
+
+  const timeline = await page.evaluate(async () => {
+    const started = performance.now();
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ command: "Analyze BTC on 4H", stream: true }),
+    });
+
+    const contentType = response.headers.get("content-type") ?? "";
+    const reader = response.body!.pipeThrough(new TextDecoderStream()).getReader();
+    const events: { type: string; at: number }[] = [];
+    let buffer = "";
+
+    for (;;) {
+      const { done, value } = await reader.read();
+
+      if (done) {
+        break;
+      }
+
+      buffer += value;
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+
+      for (const line of lines) {
+        if (line.trim().length > 0) {
+          events.push({ type: JSON.parse(line).type, at: performance.now() - started });
+        }
+      }
+    }
+
+    return { contentType, events };
+  });
+
+  assert(timeline.contentType.includes("application/x-ndjson"), `expected an NDJSON stream, got ${timeline.contentType}`);
+
+  const types = timeline.events.map((event) => event.type);
+  assert(types[0] === "intent", `stream must open with the routed intent, got ${types[0]}`);
+  assert(types.at(-1) === "done", `stream must close with the finished execution, got ${types.at(-1)}`);
+
+  const traceCount = types.filter((type) => type === "trace").length;
+  assert(traceCount >= 8, `expected at least 8 streamed trace events, saw ${traceCount}`);
+
+  // Everything landing in the same instant would mean the response was buffered.
+  const firstTrace = timeline.events.find((event) => event.type === "trace");
+  const doneAt = timeline.events.at(-1)!.at;
+  assert(firstTrace !== undefined, "no trace event was streamed");
+  assert(firstTrace.at < doneAt, `trace events must precede the done message (${firstTrace.at} vs ${doneAt})`);
+
+  await page.close();
 }
 
 /** The pulse must actually beat, and its readouts must match the deterministic mapping. */
@@ -33,7 +91,7 @@ async function checkMarketPulse(browser: Browser) {
 
   const readout = await panel.innerText();
   assert(/\d+ BPM/.test(readout), `market pulse is missing a rate readout: ${readout}`);
-  assert(/\d+ \/ 100/.test(readout), `market pulse is missing an amplitude readout: ${readout}`);
+  assert(/\d+ \/ \d+/.test(readout), `market pulse is missing an amplitude readout: ${readout}`);
   assert(/not a forecast and not\s+a probability/i.test(readout), "market pulse is missing its non-prediction disclaimer");
 
   const modulation = await measurePulseModulation(page);
@@ -133,6 +191,7 @@ async function checkDemoFlow(browser: Browser) {
 
   const traceRows = await page.locator("[data-trace-row]").count();
   assert(traceRows >= 8, `expected at least 8 real trace rows, saw ${traceRows}`);
+  await assertEveryTraceRowVisible(page, "demo flow");
 
   const body = (await page.locator("body").innerText()).toLowerCase();
   for (const phrase of ["buy now", "sell now", "go long", "go short", "guaranteed"]) {
@@ -155,6 +214,7 @@ async function captureResponsiveScreenshots(browser: Browser) {
     await runAgentWorkflow(page);
     await assertNoPageOverflow(page, `${viewport.name} /app/agent`);
     await assertTraceRowsFit(page, viewport.name, viewport.width >= 1280 ? 130 : 160);
+    await assertEveryTraceRowVisible(page, viewport.name);
     await page.screenshot({ path: `test-results/agent-${viewport.name}.png`, fullPage: true });
 
     await page.close();
@@ -178,6 +238,24 @@ async function waitForRevealSettled(page: Page) {
     },
     undefined,
     { timeout: 15_000 },
+  );
+}
+
+/**
+ * Rows arrive one at a time over the stream, and a reveal animation that re-runs
+ * across the whole list can strand the newest nodes at opacity 0 forever. Nothing
+ * else in the suite would notice: the row is in the DOM, sized, and readable.
+ */
+async function assertEveryTraceRowVisible(page: Page, label: string) {
+  const hidden = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>("[data-trace-row]")]
+      .map((row, index) => ({ index, opacity: Number(getComputedStyle(row).opacity), key: row.dataset.traceKey ?? "" }))
+      .filter((row) => row.opacity < 0.99),
+  );
+
+  assert(
+    hidden.length === 0,
+    `${label} left ${hidden.length} trace row(s) invisible: ${hidden.map((row) => `${row.key}@${row.opacity}`).join(", ")}`,
   );
 }
 

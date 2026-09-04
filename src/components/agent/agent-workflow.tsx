@@ -7,7 +7,9 @@ import { ChaosCommandInput } from "@/components/chaos/chaos-command-input";
 import { ChaosDomainError } from "@/components/chaos/chaos-domain-error";
 import { ChaosTerminalSurface } from "@/components/chaos/chaos-terminal-surface";
 import { WorkflowResult } from "@/components/market/workflow-result";
+import type { AgentTraceEvent } from "@/lib/agent/events";
 import type { AgentExecution } from "@/lib/agent/execute";
+import { createStreamParser } from "@/lib/agent/stream-protocol";
 import { routedCommandExamples } from "@/lib/agent/router";
 
 type WorkflowState = "idle" | "running" | "settled";
@@ -16,27 +18,52 @@ export function AgentWorkflow() {
   const [command, setCommand] = useState("Analyze BTC on 4H");
   const [state, setState] = useState<WorkflowState>("idle");
   const [execution, setExecution] = useState<AgentExecution | null>(null);
+  const [liveTrace, setLiveTrace] = useState<AgentTraceEvent[]>([]);
   const [transportError, setTransportError] = useState<string | null>(null);
 
   async function run(nextCommand: string) {
     setState("running");
     setExecution(null);
+    setLiveTrace([]);
     setTransportError(null);
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ command: nextCommand }),
+        body: JSON.stringify({ command: nextCommand, stream: true }),
       });
 
-      const payload = (await response.json()) as AgentExecution | { error: { code: string; message: string; hint: string } };
-
-      if ("status" in payload) {
-        setExecution(payload);
-      } else {
-        setTransportError(payload.error.message);
+      if (!response.body) {
+        throw new Error("NO_STREAM_BODY");
       }
+
+      const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+      const parser = createStreamParser();
+
+      const apply = (messages: ReturnType<typeof parser.push>) => {
+        for (const message of messages) {
+          if (message.type === "trace") {
+            setLiveTrace((previous) => [...previous, message.event]);
+          }
+
+          if (message.type === "done") {
+            setExecution(message.execution);
+          }
+        }
+      };
+
+      for (;;) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+          break;
+        }
+
+        apply(parser.push(value));
+      }
+
+      apply(parser.flush());
     } catch {
       setTransportError("The agent API could not be reached from this browser session.");
     } finally {
@@ -44,8 +71,12 @@ export function AgentWorkflow() {
     }
   }
 
-  const trace = execution && "trace" in execution ? execution.trace : [];
-  const runId = execution && "runId" in execution ? execution.runId : null;
+  // While the workflow runs the trace comes from the stream; once it settles the
+  // authoritative trace from the execution takes over (it also carries the
+  // synthesised intent and persistence rows).
+  const settledTrace = execution && "trace" in execution ? execution.trace : null;
+  const trace = settledTrace ?? liveTrace;
+  const runId = execution && "runId" in execution ? execution.runId : (liveTrace[0]?.runId ?? null);
 
   return (
     <div className="grid gap-px bg-border xl:grid-cols-[minmax(460px,34%)_1fr]">

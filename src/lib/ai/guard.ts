@@ -1,7 +1,14 @@
+import { maxSignalScore } from "@/lib/analysis/signal-engine";
 import type { AIAnalysis, AnalysisContext } from "./types";
 
 const numberPattern = /-?\d[\d,]*(?:\.\d+)?/g;
-const alwaysAllowed = new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 20, 24, 50, 100, 200]);
+
+/**
+ * Indicator periods, small ordinals, and the signal scale itself. These are
+ * structural constants of the system rather than market data, so quoting them is
+ * not an invented number.
+ */
+const alwaysAllowed = new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 20, 24, 50, 100, 200, maxSignalScore]);
 
 export function collectContextNumbers(context: AnalysisContext): number[] {
   const base = [

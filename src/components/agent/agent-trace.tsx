@@ -25,16 +25,54 @@ const phaseOrder: TracePhase[] = ["intent", "market_data", "analytics", "signal"
 
 export function AgentTrace({ events, runId, isRunning }: AgentTraceProps) {
   const container = useRef<HTMLDivElement>(null);
+  const revealed = useRef<{ runId: string | null; keys: Set<string> }>({ runId: null, keys: new Set() });
 
   useGSAP(
     () => {
-      const media = gsap.matchMedia();
+      if (!container.current) {
+        return;
+      }
 
-      media.add("(prefers-reduced-motion: no-preference)", () => {
-        gsap.from("[data-trace-row]", { opacity: 0, x: -8, duration: 0.28, stagger: 0.04, ease: "power2.out" });
+      if (revealed.current.runId !== runId) {
+        revealed.current = { runId, keys: new Set() };
+      }
+
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        return;
+      }
+
+      // Rows stream in one at a time, so only the ones that have never been
+      // revealed may animate. Re-running `from` over every row on each new
+      // arrival strands the newest nodes at opacity 0 when the next render
+      // kills the tween mid-flight.
+      const fresh = gsap.utils.toArray<HTMLElement>("[data-trace-row]", container.current).filter((row) => {
+        const key = row.dataset.traceKey ?? "";
+
+        if (revealed.current.keys.has(key)) {
+          return false;
+        }
+
+        revealed.current.keys.add(key);
+        return true;
       });
 
-      return () => media.revert();
+      if (fresh.length === 0) {
+        return;
+      }
+
+      const tween = gsap.from(fresh, {
+        opacity: 0,
+        x: -8,
+        duration: 0.28,
+        stagger: 0.04,
+        ease: "power2.out",
+        clearProps: "opacity,transform",
+      });
+
+      return () => {
+        tween.kill();
+        gsap.set(fresh, { clearProps: "opacity,transform" });
+      };
     },
     { scope: container, dependencies: [events.length, runId] },
   );
@@ -77,7 +115,7 @@ export function AgentTrace({ events, runId, isRunning }: AgentTraceProps) {
 
 function TraceRow({ event }: { event: AgentTraceEvent }) {
   return (
-    <div className="p-4" data-trace-row>
+    <div className="p-4" data-trace-key={`${event.runId}-${event.id}`} data-trace-row>
       <div className="flex items-center gap-3">
         <span className="w-6 shrink-0 font-mono text-xs text-subtle-foreground">{event.id}</span>
         <span className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">{event.toolName ?? phaseLabels[event.phase]}</span>

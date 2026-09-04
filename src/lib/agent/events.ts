@@ -29,6 +29,8 @@ export type TrackOptions<T> = {
   errorCode?: ChaosErrorCode;
 };
 
+export type TraceListener = (event: AgentTraceEvent) => void;
+
 export class TraceRecorder {
   private readonly events: AgentTraceEvent[] = [];
   private sequence = 0;
@@ -36,6 +38,7 @@ export class TraceRecorder {
   constructor(
     readonly runId: string,
     readonly workflow: string,
+    private readonly onEvent?: TraceListener,
   ) {}
 
   record(step: TraceStep, status: TraceStatus, extra: Partial<AgentTraceEvent> = {}): AgentTraceEvent {
@@ -53,6 +56,13 @@ export class TraceRecorder {
     };
 
     this.events.push(event);
+    // A listener must never be able to fail the workflow it is only observing.
+    try {
+      this.onEvent?.({ ...event });
+    } catch {
+      // ignored on purpose
+    }
+
     return event;
   }
 

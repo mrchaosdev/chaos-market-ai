@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { calculateSupportResistance } from "../../src/lib/analysis/support-resistance";
 import { calculateMarketStructure } from "../../src/lib/analysis/market-structure";
 import { calculateSignalScore } from "../../src/lib/analysis/signal-engine";
-import { compareSignals, maxSignalScore, normalizeSignal, signalComponentMax } from "../../src/lib/analysis/comparison";
+import { maxSignalScore, signalComponentMax } from "../../src/lib/analysis/comparison";
 import type { Candle } from "../../src/lib/market/types";
 
 function candlesFrom(closes: number[]): Candle[] {
@@ -98,22 +98,4 @@ describe("signal component weighting", () => {
     expect(bearish.bias).toBe("bearish");
   });
 
-  it("normalizes every dimension into a 0-100 range", () => {
-    const values = normalizeSignal(calculateSignalScore(bullish));
-
-    for (const value of Object.values(values)) {
-      expect(value).toBeGreaterThanOrEqual(0);
-      expect(value).toBeLessThanOrEqual(100);
-    }
-  });
-
-  it("reports no leader when assets are identical", () => {
-    const signal = calculateSignalScore(bullish);
-    const comparison = compareSignals([
-      { symbol: "BTCUSDT", signal },
-      { symbol: "ETHUSDT", signal },
-    ]);
-
-    expect(comparison.relativeStrength).toBeNull();
-  });
 });

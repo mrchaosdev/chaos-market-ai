@@ -1,3 +1,4 @@
+import { maxSignalScore } from "@/lib/analysis/comparison";
 import { formatNumber } from "@/lib/utils/format-number";
 import { formatPercent } from "@/lib/utils/format-market";
 import type { AssetAnalysis } from "@/lib/workflows/types";
@@ -16,7 +17,7 @@ export function MarketWatch({ analyses }: { analyses: AssetAnalysis[] }) {
             <span className={analysis.market.ticker.change24hPercent >= 0 ? "text-positive" : "text-negative"}>
               {formatPercent(analysis.market.ticker.change24hPercent)}
             </span>
-            <span className="text-muted-foreground">{analysis.signal.score} / 100</span>
+            <span className="text-muted-foreground">{analysis.signal.score} / {maxSignalScore}</span>
           </div>
         ))}
       </div>

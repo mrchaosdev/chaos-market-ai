@@ -3,7 +3,7 @@
     {
       "name": "complete-interpretation",
       "output": {
-        "summary": "BTCUSDT shows bullish structure with 72 / 100 signal alignment.",
+        "summary": "BTCUSDT shows bullish structure with 72 / 95 signal alignment.",
         "bias": "bullish",
         "observations": ["Price is above EMA20 and EMA50."],
         "bullishFactors": ["Trend structure is bullish."],
@@ -50,7 +50,7 @@
     },
     {
       "name": "context-only-numbers",
-      "prose": "Signal alignment is 72 out of 100 and RSI is 61.4.",
+      "prose": "Signal alignment is 72 out of 95 and RSI is 61.4.",
       "expectUnsupported": false
     }
   ]

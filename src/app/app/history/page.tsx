@@ -5,16 +5,57 @@ import { isPersistenceEnabled, listAnalysisRuns } from "@/lib/db/queries";
 
 export const dynamic = "force-dynamic";
 
+const persistedTables = [
+  {
+    name: "analysis_runs",
+    purpose: "One row per executed workflow, with the command that triggered it and how long it took.",
+    columns: "id · user_query · workflow · symbol · timeframe · model · status · latency_ms",
+  },
+  {
+    name: "tool_calls",
+    purpose: "One row per Binance call the workflow actually made, with its latency and outcome.",
+    columns: "id · analysis_run_id · tool_name · input_json · output_json · latency_ms · status",
+  },
+  {
+    name: "analysis_results",
+    purpose: "The market context, deterministic indicators, signal result and validated AI output.",
+    columns: "id · analysis_run_id · market_context · indicator_context · signal_context · ai_output",
+  },
+  {
+    name: "feedback",
+    purpose: "Whether a run was useful, which is the seed corpus for later evaluation work.",
+    columns: "id · analysis_run_id · helpful · rating · comment",
+  },
+];
+
 export default async function HistoryPage() {
   if (!isPersistenceEnabled()) {
     return (
       <AppShell>
-        <section className="bg-background p-5 lg:p-8">
+        <section className="space-y-4 bg-background p-5 lg:p-8">
           <ChaosPanel meta="PERSISTENCE DISABLED" title="Analysis History">
             <p className="text-sm leading-6 text-muted-foreground">
-              <span className="font-mono text-foreground">DATABASE_URL</span> is not configured, so workflow runs are executed but not persisted. Set it in
-              <span className="font-mono text-foreground"> .env.local</span> and run <span className="font-mono text-foreground">npm run db:migrate</span> to
-              enable history.
+              <span className="font-mono text-foreground">DATABASE_URL</span> is not configured, so workflow runs execute normally but are not written anywhere.
+              The agent screen reports the same thing on every run rather than pretending a run was saved.
+            </p>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">
+              Set it in <span className="font-mono text-foreground">.env.local</span> and run{" "}
+              <span className="font-mono text-foreground">npm run db:migrate</span> to enable history.
+            </p>
+          </ChaosPanel>
+
+          <ChaosPanel meta="DRIZZLE SCHEMA" title="What A Run Would Persist">
+            <div className="grid gap-px bg-border md:grid-cols-2">
+              {persistedTables.map((table) => (
+                <div className="bg-background p-4" key={table.name}>
+                  <p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">{table.name}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{table.purpose}</p>
+                  <p className="mt-3 font-mono text-[10px] uppercase leading-5 tracking-[0.12em] text-subtle-foreground">{table.columns}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 text-xs leading-5 text-subtle-foreground">
+              Sanitised summaries only. No secrets, no credentials, and no raw ticker firehose — see <span className="font-mono">docs/DATABASE.md</span> §4.
             </p>
           </ChaosPanel>
         </section>

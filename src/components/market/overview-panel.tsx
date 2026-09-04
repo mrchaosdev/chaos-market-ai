@@ -1,3 +1,4 @@
+import { maxSignalScore } from "@/lib/analysis/comparison";
 import { formatNumber } from "@/lib/utils/format-number";
 import { formatPercent } from "@/lib/utils/format-market";
 import type { MarketOverviewResult } from "@/lib/workflows/types";
@@ -21,7 +22,7 @@ export function OverviewPanel({ result }: { result: MarketOverviewResult }) {
           <div className="bg-background p-4">
             <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Average alignment</p>
             <p className="mt-4 font-mono text-4xl text-primary tabular">{result.averageScore}</p>
-            <p className="mt-1 font-mono text-xs text-muted-foreground">/ 100</p>
+            <p className="mt-1 font-mono text-xs text-muted-foreground">/ {maxSignalScore}</p>
           </div>
         </div>
 
@@ -34,7 +35,7 @@ export function OverviewPanel({ result }: { result: MarketOverviewResult }) {
                 {formatPercent(analysis.market.ticker.change24hPercent)} 24h
               </p>
               <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.16em] text-subtle-foreground">
-                {analysis.signal.score} / 100 · {analysis.structure.trend}
+                {analysis.signal.score} / {maxSignalScore} · {analysis.structure.trend}
               </p>
             </div>
           ))}

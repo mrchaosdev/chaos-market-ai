@@ -78,9 +78,11 @@ npm run db:migrate
 
 ## Demo flow
 
+The full recording script is in [`docs/DEMO.md`](docs/DEMO.md).
+
 1. Open `/` — the landing page runs a real `Analyze BTC 4H` workflow and shows its actual trace.
 2. Click **Run Analysis** to reach `/app/agent`.
-3. Send `Analyze BTC on 4H`. The trace fills in per real executed step: four Binance tool calls, the indicator engine, market structure, signal engine, interpretation, persistence.
+3. Send `Analyze BTC on 4H`. The trace streams in per real executed step: four Binance tool calls, the indicator engine, market structure, signal engine, interpretation, persistence.
 4. Read the result right to left: evidence and deterministic metrics first, model prose last.
 5. Try `Compare BTC and ETH on 4H`, `Is BTC near a good entry area?`, and `How is the market today?`.
 6. Send something unrelated — the agent answers `COMMAND NOT ROUTED` instead of falling back to a chatbot.
@@ -91,7 +93,7 @@ npm run db:migrate
 
 | Route | Method | Body | Responsibility |
 |---|---|---|---|
-| `/api/chat` | POST | `{ command }` | Route the command to a workflow, execute it, return intent, trace, result, persistence status |
+| `/api/chat` | POST | `{ command, stream? }` | Route the command to a workflow and execute it. Returns JSON by default; with `stream: true` returns NDJSON (`intent`, one `trace` per executed step, then `done`) |
 | `/api/market` | GET | — | Market overview for BTC / ETH / BNB |
 | `/api/analyze` | POST | `{ symbol?, timeframe? }` | Analyze one asset |
 | `/api/compare` | POST | `{ symbols?, timeframe? }` | Compare two or three assets |
@@ -109,7 +111,8 @@ Errors return `{ error: { code, message, hint }, runId, trace }` with a status d
 npm run test      # unit tests plus router / tool / schema / safety eval runners
 npm run lint
 npm run build
-npm run test:e2e  # requires a running dev server; demo flow plus 390-1440px screenshots
+npm run test:e2e  # requires a running dev server; demo flow, NDJSON streaming, market pulse,
+                  # reduced motion, and 390-1440px screenshots
 ```
 
 `npm run test:e2e` writes screenshots to `test-results/` and fails on console errors, horizontal overflow, or any instructional trading language rendered on screen.
@@ -142,6 +145,7 @@ Read before implementation:
 8. `docs/SOURCES.md`
 9. `docs/ACCEPTANCE.md`
 10. `docs/TODO.md`
+11. `docs/DEMO.md`
 
 ## V1 law
 

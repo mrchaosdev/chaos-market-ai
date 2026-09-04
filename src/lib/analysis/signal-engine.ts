@@ -14,6 +14,18 @@ export type SignalScore = {
   };
 };
 
+/** The weight ceiling of each component. Their sum is the real maximum a score can reach. */
+export const signalComponentMax: Record<keyof SignalScore["components"], number> = {
+  trend: 30,
+  momentum: 16,
+  volume: 14,
+  volatility: 10,
+  funding: 10,
+  orderbook: 15,
+};
+
+export const maxSignalScore = Object.values(signalComponentMax).reduce((total, value) => total + value, 0);
+
 export function calculateSignalScore(input: {
   structure: MarketStructure;
   funding: FundingRate;

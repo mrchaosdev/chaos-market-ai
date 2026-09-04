@@ -12,7 +12,7 @@ export function MarketHeader() {
         </div>
       </div>
       <div className="grid grid-cols-3 gap-3 tabular">
-        <ChaosMetric label="Track" value="A / B" />
+        <ChaosMetric label="Track" value="A" />
         <ChaosMetric label="Deadline" value="SEP 08" />
         <ChaosMetric label="Mode" value="READ ONLY" />
       </div>

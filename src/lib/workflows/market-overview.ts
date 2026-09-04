@@ -2,7 +2,7 @@ import type { AgentTraceEvent } from "@/lib/agent/events";
 import type { MarketDataProvider } from "@/lib/market/provider";
 import type { Timeframe } from "@/lib/market/types";
 import { analyzeAsset, type AssetAnalysis } from "./analyze-asset";
-import { buildWorkflowMeta, createWorkflowContext, toWorkflowFailure, type WorkflowMeta } from "./context";
+import { buildWorkflowMeta, createWorkflowContext, toWorkflowFailure, type WorkflowMeta, type WorkflowOptions } from "./context";
 
 export const overviewSymbols = ["BTCUSDT", "ETHUSDT", "BNBUSDT"];
 
@@ -19,8 +19,8 @@ export type MarketOverviewResult = {
   meta: WorkflowMeta;
 };
 
-export async function marketOverviewWorkflow(provider: MarketDataProvider, timeframe: Timeframe = "4h"): Promise<MarketOverviewResult> {
-  const context = createWorkflowContext("MarketOverviewWorkflow", "overview");
+export async function marketOverviewWorkflow(provider: MarketDataProvider, timeframe: Timeframe = "4h", options: WorkflowOptions = {}): Promise<MarketOverviewResult> {
+  const context = createWorkflowContext("MarketOverviewWorkflow", "overview", options);
 
   try {
     const analyses = await Promise.all(overviewSymbols.map((symbol) => analyzeAsset(provider, { symbol, timeframe }, context)));

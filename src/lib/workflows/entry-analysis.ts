@@ -1,8 +1,9 @@
+import { maxSignalScore } from "@/lib/analysis/comparison";
 import type { AgentTraceEvent } from "@/lib/agent/events";
 import type { MarketDataProvider } from "@/lib/market/provider";
 import type { Timeframe } from "@/lib/market/types";
 import { analyzeAsset, type AssetAnalysis } from "./analyze-asset";
-import { buildWorkflowMeta, createWorkflowContext, toWorkflowFailure, type WorkflowMeta } from "./context";
+import { buildWorkflowMeta, createWorkflowContext, toWorkflowFailure, type WorkflowMeta, type WorkflowOptions } from "./context";
 
 export type EntryContext = {
   currentStructure: AssetAnalysis["structure"]["trend"];
@@ -25,8 +26,8 @@ export type EntryAnalysisResult = AssetAnalysis & {
   meta: WorkflowMeta;
 };
 
-export async function entryAnalysisWorkflow(provider: MarketDataProvider, symbol: string, timeframe: Timeframe): Promise<EntryAnalysisResult> {
-  const context = createWorkflowContext("EntryAnalysisWorkflow", "entry");
+export async function entryAnalysisWorkflow(provider: MarketDataProvider, symbol: string, timeframe: Timeframe, options: WorkflowOptions = {}): Promise<EntryAnalysisResult> {
+  const context = createWorkflowContext("EntryAnalysisWorkflow", "entry", options);
 
   try {
     const analysis = await analyzeAsset(provider, { symbol, timeframe }, context);
@@ -82,6 +83,6 @@ function buildEvidence(analysis: AssetAnalysis) {
     `Trend structure is ${analysis.structure.trend} on ${analysis.timeframe}.`,
     `Momentum is ${analysis.structure.momentum} and volatility is ${analysis.structure.volatility}.`,
     `Volume state is ${analysis.structure.volume}.`,
-    `Signal alignment is ${analysis.signal.score} out of 100 across six deterministic components.`,
+    `Signal alignment is ${analysis.signal.score} out of ${maxSignalScore} across six deterministic components.`,
   ];
 }

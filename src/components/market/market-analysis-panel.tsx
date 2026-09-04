@@ -1,4 +1,4 @@
-import { signalComponentMax } from "@/lib/analysis/comparison";
+import { maxSignalScore, signalComponentMax } from "@/lib/analysis/comparison";
 import { formatNumber } from "@/lib/utils/format-number";
 import { formatPercent } from "@/lib/utils/format-market";
 import type { AssetAnalysis } from "@/lib/workflows/types";
@@ -25,7 +25,7 @@ export function MarketAnalysisPanel({ analysis, showChart = true }: MarketAnalys
           <div className="bg-background p-4">
             <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Signal Alignment</p>
             <p className="mt-4 font-mono text-4xl text-primary tabular">{analysis.signal.score}</p>
-            <p className="mt-1 font-mono text-xs text-muted-foreground">/ 100 · not a probability</p>
+            <p className="mt-1 font-mono text-xs text-muted-foreground">/ {maxSignalScore} · not a probability</p>
           </div>
         </div>
 

@@ -46,7 +46,7 @@
 - [x] Intent router.
 - [x] Command-style UI.
 - [x] `/api/chat` should execute routed workflows, not only return intent.
-- [ ] Stream workflow events. *(V1 stays non-streaming per `docs/AGENT.md` §8; the event model is already in place, so streaming is a transport change only.)*
+- [x] Stream workflow events. *(`/api/chat` with `{ stream: true }` returns NDJSON: an `intent` message, one `trace` message per real executed step, then a `done` message carrying the same `AgentExecution` the JSON route returns. The agent screen renders rows as they arrive. The non-streaming path is unchanged and still the default.)*
 - [x] Show real tool events in `AgentTrace`.
 - [x] Handle unknown intent with domain-specific message.
 - [x] Add compare follow-up command.
@@ -87,6 +87,7 @@
 - [x] Add volatility classification tests.
 - [x] Add signal component weighting tests.
 - [x] Ensure signal alignment is never described as probability.
+- [x] Report the signal scale honestly. *(Component weights total 95, but eight surfaces claimed "/ 100" while the Signal Components panel visibly listed 30+16+14+10+10+15. The maxima now live in `signal-engine.ts` as the single source of truth, every surface reads from it, and the AI numeric guard accepts it as a system constant rather than an invented number.)*
 
 ---
 
@@ -113,6 +114,9 @@
 - [x] Mobile layout pass at 390px.
 - [x] Tablet layout pass at 768px.
 - [x] Desktop layout pass at 1024/1280/1440px.
+- [x] Rebuild asset comparison on measured values. *(The old table normalised the signal engine's bucketed components, so two assets that were both simply bullish tied on 4 of 6 dimensions and the screen read as broken. It now compares trend extension vs EMA50, RSI, volume change, funding pressure, ATR share and the alignment total — each shown with its unit, each with a real leader.)*
+- [x] Fix the empty grid cell on the compare screen when fewer than three assets are shown.
+- [x] Give the history screen substance when persistence is disabled, instead of one line and 700px of nothing.
 
 ---
 
@@ -165,6 +169,7 @@
 - [x] `docs/SOURCES.md`.
 - [x] `docs/ACCEPTANCE.md`.
 - [x] `docs/TODO.md`.
+- [x] `docs/DEMO.md` recording script.
 - [x] Update README with real AI setup.
 - [x] Update README with Binance data setup.
 - [x] Update README with demo flow.
@@ -200,11 +205,11 @@
 
 ## 12. Hackathon submission
 
-- [ ] Confirm Binance hackathon track.
-- [ ] Confirm final demo workflow.
-- [ ] Prepare demo script.
+- [x] Confirm Binance hackathon track. *(Track A — build an AI agent with Agent OS, 20K USDC. Track B pays 40K but requires trading, which contradicts the read-only law in `PROJECT.md` §2.5/§6, `SKILL.md` §8 and `ACCEPTANCE.md` §5. Deadline 8 Sep 2026, 23:59 UTC.)*
+- [x] Confirm final demo workflow. *(`Analyze BTC on 4H`, then compare / entry / overview, then an unrouted command. See `docs/DEMO.md`.)*
+- [x] Prepare demo script. *(`docs/DEMO.md`.)*
 - [ ] Record video: landing → agent → trace → evidence.
-- [ ] Deploy to Vercel.
+- [ ] Deploy to Vercel. *(Owner is handling deployment.)*
 - [ ] Verify production env vars.
 - [ ] Add final GitHub README.
 - [ ] Submit GitHub URL.
@@ -215,20 +220,19 @@
 
 ## Current priority order
 
-1. Hackathon submission: confirm track, deploy to Vercel, record the demo video.
+1. Hackathon submission (Track A): deploy, record the demo video, submit GitHub + video, complete the survey.
 2. DB query tests against a live PostgreSQL instance.
-3. Stream `/api/chat` workflow events (transport change on the existing event model).
-4. Binance MCP / Agent OS adapter once the runtime is available.
+3. Binance MCP / Agent OS adapter once the runtime is available.
 
 ---
 
 ## Verification snapshot
 
 ```text
-npm run test      80 tests, 15 files, passing
+npm run test      94 tests, 17 files, passing
 npm run lint      0 problems
 npm run build     passing
-npm run test:e2e  demo flow + market pulse + reduced motion + 390/768/1024/1280/1440, passing
+npm run test:e2e  demo flow + NDJSON streaming + market pulse + reduced motion + 390/768/1024/1280/1440, passing
 ```
 
 Live check against `fapi.binance.com` returns real trace rows for all four workflows,

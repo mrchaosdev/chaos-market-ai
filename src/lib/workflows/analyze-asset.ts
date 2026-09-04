@@ -1,3 +1,4 @@
+import { maxSignalScore } from "@/lib/analysis/comparison";
 import type { AIAnalysis, AnalysisContext } from "@/lib/ai/types";
 import type { AgentTraceEvent } from "@/lib/agent/events";
 import { calculateMarketStructure, type MarketStructure } from "@/lib/analysis/market-structure";
@@ -7,7 +8,7 @@ import type { MarketDataProvider } from "@/lib/market/provider";
 import type { Candle, FundingRate, OrderBook, Ticker, Timeframe } from "@/lib/market/types";
 import { ChaosError, toChaosError } from "@/lib/utils/errors";
 import { formatNumber } from "@/lib/utils/format-number";
-import { buildWorkflowMeta, createWorkflowContext, toWorkflowFailure, type WorkflowContext, type WorkflowMeta } from "./context";
+import { buildWorkflowMeta, createWorkflowContext, toWorkflowFailure, type WorkflowContext, type WorkflowMeta, type WorkflowOptions } from "./context";
 
 export type AnalyzeAssetInput = {
   symbol: string;
@@ -47,8 +48,8 @@ export type AnalyzeAssetResult = AssetAnalysis & {
   meta: WorkflowMeta;
 };
 
-export async function analyzeAssetWorkflow(provider: MarketDataProvider, input: AnalyzeAssetInput): Promise<AnalyzeAssetResult> {
-  const context = createWorkflowContext("AnalyzeAssetWorkflow", "run");
+export async function analyzeAssetWorkflow(provider: MarketDataProvider, input: AnalyzeAssetInput, options: WorkflowOptions = {}): Promise<AnalyzeAssetResult> {
+  const context = createWorkflowContext("AnalyzeAssetWorkflow", "run", options);
 
   try {
     const analysis = await analyzeAsset(provider, input, context);
@@ -90,7 +91,7 @@ export async function analyzeAsset(provider: MarketDataProvider, input: AnalyzeA
   const signal = await context.recorder.track(
     { phase: "signal", toolName: "signalEngine", inputSummary: label },
     () => calculateSignalScore({ structure, funding, orderBook }),
-    { summarize: (value) => `${value.score} / 100 alignment · ${value.bias}`, errorCode: "ANALYTICS_ERROR" },
+    { summarize: (value) => `${value.score} / ${maxSignalScore} alignment · ${value.bias}`, errorCode: "ANALYTICS_ERROR" },
   );
 
   const aiContext: AnalysisContext = {

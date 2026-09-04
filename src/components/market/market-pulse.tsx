@@ -1,5 +1,6 @@
 "use client";
 
+import { maxSignalScore } from "@/lib/analysis/comparison";
 import { useEffect, useRef } from "react";
 import { derivePulse, heartbeat, type PulseInput } from "@/lib/analysis/pulse";
 import { resolveTokenChannels, type RgbChannels } from "@/lib/utils/css-color";
@@ -167,7 +168,7 @@ export function MarketPulse({ points = 950, height = 300, ...state }: MarketPuls
 
       <dl className="grid grid-cols-3 gap-px border-t border-border bg-border">
         <Readout label="Rate" value={`${pulse.bpm} BPM`} hint={`${state.volatility} volatility`} />
-        <Readout label="Amplitude" value={`${state.signalScore} / 100`} hint="signal alignment" />
+        <Readout label="Amplitude" value={`${state.signalScore} / ${maxSignalScore}`} hint="signal alignment" />
         <Readout label="Rhythm" value={state.trend} hint={`volume ${state.volume}`} tone={pulse.tone} />
       </dl>
 

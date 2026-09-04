@@ -1,3 +1,4 @@
+import { maxSignalScore } from "@/lib/analysis/comparison";
 import { formatNumber } from "@/lib/utils/format-number";
 import type { EntryAnalysisResult } from "@/lib/workflows/types";
 import { MarketAnalysisPanel } from "./market-analysis-panel";
@@ -23,7 +24,7 @@ export function EntryPanel({ result }: { result: EntryAnalysisResult }) {
           <Field label="Distance to support" value={formatNullablePercent(entry.distanceToSupportPercent)} />
           <Field label="Distance to resistance" value={formatNullablePercent(entry.distanceToResistancePercent)} />
           <Field label="Risk" value={entry.risk} tone="warning" />
-          <Field label="Signal alignment" value={`${entry.signalAlignment} / 100`} />
+          <Field label="Signal alignment" value={`${entry.signalAlignment} / ${maxSignalScore}`} />
         </div>
 
         <div className="mt-5 border border-border bg-surface p-4">

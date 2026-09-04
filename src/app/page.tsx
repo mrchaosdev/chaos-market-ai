@@ -1,3 +1,4 @@
+import { maxSignalScore } from "@/lib/analysis/comparison";
 import { AgentTrace } from "@/components/agent/agent-trace";
 import { ChaosDomainError } from "@/components/chaos/chaos-domain-error";
 import { ChaosField } from "@/components/chaos/chaos-field";
@@ -45,9 +46,9 @@ export default async function Home() {
               <h1 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">Chaos Market AI</h1>
             </div>
             <div className="grid grid-cols-3 gap-px bg-border">
-              <ChaosMetric label="Track" value="A / B" />
+              <ChaosMetric label="Track" value="A" />
               <ChaosMetric label="Deadline" value="SEP 08" />
-              <ChaosMetric label="Signal" value={result ? `${result.signal.score}/100` : "UNAVAILABLE"} />
+              <ChaosMetric label="Signal" value={result ? `${result.signal.score}/${maxSignalScore}` : "UNAVAILABLE"} />
             </div>
           </header>
 
