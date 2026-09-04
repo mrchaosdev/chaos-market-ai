@@ -100,6 +100,7 @@ The full recording script is in [`docs/DEMO.md`](docs/DEMO.md).
 | `/api/entry` | POST | `{ symbol?, timeframe? }` | Entry-area structure, in neutral language |
 | `/api/history` | GET | — | Persisted runs |
 | `/api/feedback` | POST | `{ runId, helpful, rating?, comment? }` | Record run feedback |
+| `/api/health` | GET | — | Whether this deployment can actually reach Binance, plus active provider and persistence state. No secrets. |
 
 Errors return `{ error: { code, message, hint }, runId, trace }` with a status derived from the domain error code.
 
@@ -121,13 +122,36 @@ npm run test:e2e  # requires a running dev server; demo flow, NDJSON streaming, 
 
 ## Deployment
 
-Vercel:
+### Region comes first
+
+**Binance refuses public market data to US IP ranges, and Vercel deploys to `iad1` (US East) by default.** A deployment that lands there returns `REGION_RESTRICTED` on every workflow, and no amount of environment configuration fixes it. `vercel.json` therefore pins the deployment to `fra1`:
+
+```json
+{ "regions": ["fra1"] }
+```
+
+If `fra1` is unavailable on your plan, `sin1` and `syd1` are the usual alternatives. Verify before recording anything:
+
+```bash
+curl -s https://<your-deployment>/api/health | jq
+```
+
+```json
+{ "status": "ok", "marketData": { "reachable": true, "sampleSymbol": "BTCUSDT" } }
+```
+
+A blocked region reports itself precisely:
+
+```json
+{ "status": "degraded", "marketData": { "errorCode": "REGION_RESTRICTED", "hint": "..." } }
+```
+
+### Then the rest
 
 1. Import the repository and keep the default Next.js build (`npm run build`).
-2. Set project environment variables: `MARKET_PROVIDER`, `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`, `DATABASE_URL`. Set them as server-side variables only — never prefix any of them with `NEXT_PUBLIC_`.
-3. Run `npm run db:migrate` against the production database once before the first deploy.
+2. Environment variables are all optional. With none set the app still runs: `binance-public` market data, the deterministic `local` interpretation provider, and persistence disabled. Add `AI_PROVIDER` + `AI_API_KEY` + `AI_MODEL` for a cloud model, and `DATABASE_URL` for history. Server-side only — never prefix any of them with `NEXT_PUBLIC_`.
+3. Run `npm run db:migrate` against the production database once, only if you set `DATABASE_URL`.
 4. Every product route is dynamic and uncached, so no build-time market data is baked into the deployment.
-5. Binance blocks some hosting regions. Confirm the deployment region can reach `fapi.binance.com`, or point `BINANCE_PUBLIC_BASE_URL` at a reachable Binance endpoint.
 
 ---
 

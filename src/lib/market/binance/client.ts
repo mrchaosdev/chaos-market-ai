@@ -67,6 +67,16 @@ export class BinancePublicClient {
       throw await this.toBadRequestError(response, symbol);
     }
 
+    // Binance answers 451 for a legally restricted region and 403 for a blocked
+    // IP range. Both reach the network fine, so reporting them as "unreachable"
+    // sends whoever is debugging a deployment down the wrong path entirely.
+    if (response.status === 451 || response.status === 403) {
+      throw new ChaosError(
+        "REGION_RESTRICTED",
+        `Binance returned ${response.status} for this IP. Public market data is not served to this region or hosting network.`,
+      );
+    }
+
     if (!response.ok) {
       throw new ChaosError("BINANCE_UNAVAILABLE", `Binance responded with status ${response.status}.`);
     }

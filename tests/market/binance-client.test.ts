@@ -56,6 +56,23 @@ describe("binance public client", () => {
     await expect(new BinancePublicClient({ baseUrl: "https://example.test" }).getTicker("NOTREAL")).rejects.toMatchObject({ code: "INVALID_SYMBOL" });
   });
 
+  it("maps HTTP 451 to REGION_RESTRICTED rather than to a network failure", async () => {
+    mockFetch({ ok: false, status: 451, jsonValue: {} });
+
+    const error = await new BinancePublicClient({ baseUrl: "https://example.test" }).getTicker("BTCUSDT").catch((caught) => caught);
+
+    expect((error as ChaosError).code).toBe("REGION_RESTRICTED");
+    expect((error as ChaosError).toPayload().hint).toMatch(/region/i);
+  });
+
+  it("maps HTTP 403 to REGION_RESTRICTED", async () => {
+    mockFetch({ ok: false, status: 403, jsonValue: {} });
+
+    await expect(new BinancePublicClient({ baseUrl: "https://example.test" }).getTicker("BTCUSDT")).rejects.toMatchObject({
+      code: "REGION_RESTRICTED",
+    });
+  });
+
   it("maps an unreachable endpoint to BINANCE_UNAVAILABLE", async () => {
     vi.stubGlobal(
       "fetch",

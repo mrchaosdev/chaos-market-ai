@@ -1,6 +1,7 @@
 export type ChaosErrorCode =
   | "MCP_CONNECTION_ERROR"
   | "BINANCE_UNAVAILABLE"
+  | "REGION_RESTRICTED"
   | "INVALID_SYMBOL"
   | "RATE_LIMIT"
   | "MARKET_DATA_ERROR"
@@ -33,6 +34,7 @@ export class ChaosError extends Error {
 export const chaosErrorHints: Record<ChaosErrorCode, string> = {
   MCP_CONNECTION_ERROR: "The Binance Agent OS / MCP runtime did not answer. Switch MARKET_PROVIDER to binance-public or start the runtime.",
   BINANCE_UNAVAILABLE: "Binance public market data is not reachable right now. No analysis is produced from placeholder prices.",
+  REGION_RESTRICTED: "Binance refuses public market data from this IP. Cloud regions such as Vercel's default us-east are commonly blocked. Deploy to an allowed region, or point BINANCE_PUBLIC_BASE_URL at a reachable Binance endpoint.",
   INVALID_SYMBOL: "The requested symbol is not listed on the Binance USDT-M futures market.",
   RATE_LIMIT: "Binance rate limit reached. Wait for the limit window to reset before running the workflow again.",
   MARKET_DATA_ERROR: "Market data was retrieved but did not contain the fields the workflow requires.",
@@ -45,6 +47,7 @@ export const chaosErrorHints: Record<ChaosErrorCode, string> = {
 export const chaosErrorStatus: Record<ChaosErrorCode, number> = {
   MCP_CONNECTION_ERROR: 502,
   BINANCE_UNAVAILABLE: 502,
+  REGION_RESTRICTED: 451,
   INVALID_SYMBOL: 400,
   RATE_LIMIT: 429,
   MARKET_DATA_ERROR: 502,

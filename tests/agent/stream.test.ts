@@ -6,6 +6,9 @@ import type { AgentTraceEvent } from "../../src/lib/agent/events";
 import { FakeMarketDataProvider } from "../fixtures/market-provider";
 
 beforeEach(() => {
+  // Restored every test: one case below points the client at a dead port, and
+  // leaking that base URL would fail unrelated tests in the same worker.
+  delete process.env.BINANCE_PUBLIC_BASE_URL;
   process.env.AI_PROVIDER = "local";
   process.env.AI_API_KEY = "";
   process.env.MARKET_PROVIDER = "demo";

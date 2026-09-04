@@ -69,6 +69,8 @@
 - [x] Invalid symbol handling.
 - [x] Rate-limit handling in UI.
 - [x] Network unavailable handling in UI.
+- [x] Separate a blocked region from an unreachable network. *(Binance answers 451 for a restricted region and 403 for a blocked hosting IP; both used to surface as `BINANCE_UNAVAILABLE`, which sends anyone debugging a deployment after the wrong cause. They now raise `REGION_RESTRICTED` with the actual remedy in the hint.)*
+- [x] Add `/api/health` so a deployment can report whether it reaches Binance from where it actually runs.
 - [x] Split support/resistance into dedicated module.
 - [x] Add provider integration test with mocked fetch.
 
@@ -209,7 +211,7 @@
 - [x] Confirm final demo workflow. *(`Analyze BTC on 4H`, then compare / entry / overview, then an unrouted command. See `docs/DEMO.md`.)*
 - [x] Prepare demo script. *(`docs/DEMO.md`.)*
 - [ ] Record video: landing → agent → trace → evidence.
-- [ ] Deploy to Vercel. *(Owner is handling deployment.)*
+- [ ] Deploy to Vercel. *(Owner is handling deployment. `vercel.json` pins `fra1` — the default `iad1` is a US region and Binance blocks it. Confirm with `/api/health` before recording.)*
 - [ ] Verify production env vars.
 - [ ] Add final GitHub README.
 - [ ] Submit GitHub URL.
@@ -229,7 +231,7 @@
 ## Verification snapshot
 
 ```text
-npm run test      94 tests, 17 files, passing
+npm run test      96 tests, 17 files, passing
 npm run lint      0 problems
 npm run build     passing
 npm run test:e2e  demo flow + NDJSON streaming + market pulse + reduced motion + 390/768/1024/1280/1440, passing
