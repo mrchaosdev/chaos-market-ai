@@ -15,10 +15,11 @@ async function main() {
   try {
     await checkDemoFlow(browser);
     await checkStreamingTransport(browser);
+    await checkAgentSphere(browser);
     await checkMarketPulse(browser);
     await checkReducedMotion(browser);
     await captureResponsiveScreenshots(browser);
-    console.log("e2e: demo flow, streaming, market pulse, reduced motion and responsive capture passed");
+    console.log("e2e: demo flow, streaming, agent sphere, market pulse, reduced motion and responsive capture passed");
   } finally {
     await browser.close();
   }
@@ -81,6 +82,63 @@ async function checkStreamingTransport(browser: Browser) {
   await page.close();
 }
 
+/**
+ * The agent's body must track the real workflow: resting before a command, beating
+ * faster while Binance tools are in flight, and settling once the run completes.
+ */
+async function checkAgentSphere(browser: Browser) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.goto(`${baseUrl}/app/agent`, { waitUntil: "domcontentloaded" });
+
+  const sphere = page.locator("[data-agent-sphere]");
+  await sphere.waitFor({ timeout: 30_000 });
+
+  assert((await sphere.getAttribute("data-agent-state")) === "resting", "the agent should rest before any command");
+  const restingRate = await readSphereRate(sphere);
+
+  const modulation = await measurePulseModulation(page, "[data-agent-sphere] canvas");
+  assert(modulation > 0.02, `agent sphere renders but does not beat (modulation ${modulation.toFixed(4)})`);
+
+  // "working" can last only a few hundred milliseconds on a warm cache, so record
+  // every transition up front rather than trying to catch one in the act.
+  await page.evaluate(() => {
+    const target = document.querySelector("[data-agent-sphere]")!;
+    const seen: { state: string; rate: number }[] = [];
+    const capture = () => {
+      const state = target.getAttribute("data-agent-state") ?? "";
+      const rate = Number(/(\d+) BPM/.exec((target as HTMLElement).innerText)?.[1] ?? 0);
+
+      if (seen.at(-1)?.state !== state) {
+        seen.push({ state, rate });
+      }
+    };
+
+    capture();
+    new MutationObserver(capture).observe(target, { attributes: true, subtree: true, childList: true, characterData: true });
+    (window as unknown as { __agentStates: typeof seen }).__agentStates = seen;
+  });
+
+  await page.getByRole("button", { name: "Analyze BTC on 4H" }).click();
+  await page.getByText(/signal alignment/i).first().waitFor({ timeout: 60_000 });
+  await page.waitForTimeout(300);
+
+  const states = await page.evaluate(() => (window as unknown as { __agentStates: { state: string; rate: number }[] }).__agentStates);
+  const names = states.map((entry) => entry.state);
+
+  assert(names.includes("working"), `the agent never entered a working state, saw ${names.join(" -> ")}`);
+  assert(names.at(-1) === "complete", `the agent should settle as complete, ended at ${names.at(-1)}`);
+
+  const working = states.find((entry) => entry.state === "working")!;
+  assert(working.rate > restingRate, `working rate ${working.rate} should exceed resting rate ${restingRate}`);
+  assert(/steps executed/.test(await sphere.innerText()), "a settled agent should report how many steps actually ran");
+
+  await page.close();
+}
+
+async function readSphereRate(sphere: ReturnType<Page["locator"]>) {
+  return Number(/(\d+) BPM/.exec(await sphere.innerText())?.[1] ?? 0);
+}
+
 /** The pulse must actually beat, and its readouts must match the deterministic mapping. */
 async function checkMarketPulse(browser: Browser) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 950 } });
@@ -138,9 +196,9 @@ async function checkReducedMotion(browser: Browser) {
 }
 
 /** Relative swing of total canvas ink over ~1.6s, sampled per animation frame. */
-async function measurePulseModulation(page: Page) {
-  return page.evaluate(async () => {
-    const canvas = document.querySelector<HTMLCanvasElement>("[data-market-pulse] canvas");
+async function measurePulseModulation(page: Page, selector = "[data-market-pulse] canvas") {
+  return page.evaluate(async (target) => {
+    const canvas = document.querySelector<HTMLCanvasElement>(target);
     const context = canvas?.getContext("2d", { willReadFrequently: true });
 
     if (!canvas || !context) {
@@ -175,7 +233,7 @@ async function measurePulseModulation(page: Page) {
     const max = Math.max(...samples);
 
     return max === 0 ? 0 : (max - min) / max;
-  });
+  }, selector);
 }
 
 async function checkDemoFlow(browser: Browser) {

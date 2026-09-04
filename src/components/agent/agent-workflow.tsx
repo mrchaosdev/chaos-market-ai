@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AgentSphere } from "@/components/agent/agent-sphere";
 import { AgentTrace } from "@/components/agent/agent-trace";
 import { RunFeedback } from "@/components/agent/run-feedback";
 import { ChaosCommandInput } from "@/components/chaos/chaos-command-input";
@@ -9,6 +10,7 @@ import { ChaosTerminalSurface } from "@/components/chaos/chaos-terminal-surface"
 import { WorkflowResult } from "@/components/market/workflow-result";
 import type { AgentTraceEvent } from "@/lib/agent/events";
 import type { AgentExecution } from "@/lib/agent/execute";
+import type { AgentActivity } from "@/lib/agent/vitals";
 import { createStreamParser } from "@/lib/agent/stream-protocol";
 import { routedCommandExamples } from "@/lib/agent/router";
 
@@ -74,23 +76,28 @@ export function AgentWorkflow() {
   // While the workflow runs the trace comes from the stream; once it settles the
   // authoritative trace from the execution takes over (it also carries the
   // synthesised intent and persistence rows).
+  const activity: AgentActivity =
+    state === "running"
+      ? "running"
+      : execution?.status === "error" || transportError !== null
+        ? "failed"
+        : execution?.status === "not_routed"
+          ? "not_routed"
+          : execution?.status === "success"
+            ? "settled"
+            : "idle";
+
   const settledTrace = execution && "trace" in execution ? execution.trace : null;
   const trace = settledTrace ?? liveTrace;
   const runId = execution && "runId" in execution ? execution.runId : (liveTrace[0]?.runId ?? null);
 
   return (
     <div className="grid gap-px bg-border xl:grid-cols-[minmax(460px,34%)_1fr]">
-      <section className="bg-background/95 p-5 lg:p-8">
+      <section className="space-y-8 bg-background/95 p-5 lg:p-8">
+        <AgentSphere activity={activity} runId={runId} trace={trace} />
+
         <ChaosTerminalSurface>
           <div className="p-5">
-            <p className="font-mono text-xs uppercase tracking-[0.24em] text-primary">Chaos Agent</p>
-            <h2 className="mt-4 text-4xl font-semibold leading-[0.95] tracking-[-0.06em]">Intent becomes workflow. Workflow becomes evidence.</h2>
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              The agent routes a command into a deterministic workflow, retrieves Binance market data, calculates indicators, and only then asks the model to
-              explain what was measured.
-            </p>
-          </div>
-          <div className="border-t border-border p-5">
             <ChaosCommandInput disabled={state === "running"} onChange={setCommand} onSubmit={() => run(command)} value={command} />
             <div className="mt-3 flex flex-wrap gap-2">
               {routedCommandExamples.map((example) => (
@@ -111,7 +118,7 @@ export function AgentWorkflow() {
           </div>
         </ChaosTerminalSurface>
 
-        <div className="mt-8">
+        <div>
           <AgentTrace events={trace} isRunning={state === "running"} runId={runId} />
         </div>
 

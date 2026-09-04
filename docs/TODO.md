@@ -138,7 +138,7 @@
 - [x] Add feedback UI.
 - [x] Wire history page to DB.
 - [x] Add DB query tests for the persistence-disabled path.
-- [ ] Add DB query tests against a live PostgreSQL instance.
+- [x] Add DB query tests against a live PostgreSQL instance. *(7 tests in `tests/db/live-persistence.test.ts` run against real Postgres 16: the three-table write, a failed run carrying its domain error, ordering and limit, feedback round-trip, a rejected foreign key, a duplicate run id, and `on delete cascade`. They skip loudly with a printed reason when no database is reachable, so a green run never hides that nothing was exercised.)*
 - [x] Add local setup instructions for PostgreSQL.
 
 ---
@@ -233,7 +233,7 @@
 ## Verification snapshot
 
 ```text
-npm run test      96 tests, 17 files, passing
+npm run test      103 tests, 18 files, passing (7 of them need a live PostgreSQL and skip without one)
 npm run lint      0 problems
 npm run build     passing
 npm run test:e2e  demo flow + NDJSON streaming + market pulse + reduced motion + 390/768/1024/1280/1440, passing

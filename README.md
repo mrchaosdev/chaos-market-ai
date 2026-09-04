@@ -74,6 +74,18 @@ npm run db:migrate
 
 `npm run db:generate` regenerates SQL from `src/lib/db/schema.ts` into `drizzle/`. Runs, tool calls, results, and feedback persist; the history screen and `/api/history` read from the same tables. Without `DATABASE_URL` the app runs normally and says so.
 
+#### Database tests
+
+`tests/db/live-persistence.test.ts` exercises the real SQL. Point it at a throwaway database:
+
+```bash
+docker run --name chaos-pg-test -e POSTGRES_PASSWORD=chaos -e POSTGRES_DB=chaos_test   -p 55432:5432 -d postgres:16
+DATABASE_URL=postgres://postgres:chaos@localhost:55432/chaos_test npx drizzle-kit migrate
+npm run test
+```
+
+It defaults to that connection string and honours `TEST_DATABASE_URL` if you use another. With no database reachable the suite skips and prints why, so the rest of `npm run test` still runs.
+
 ---
 
 ## Demo flow
