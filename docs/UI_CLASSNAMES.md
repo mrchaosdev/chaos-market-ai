@@ -25,6 +25,7 @@ State and variant modifiers may be generated from component props. Examples:
 | Landing | `.cm-landing`, `.cm-landing-header`, `.cm-landing-hero`, `.cm-landing-workspace`, `.cm-landing-product` |
 | App shell | `.cm-app-shell`, `.cm-app-shell__frame`, `.cm-app-shell__content` |
 | Top navigation | `.cm-top-nav`, `.cm-app-nav`, `.cm-app-nav__item` |
+| Mobile navigation | `.cm-mobile-nav`, `.cm-mobile-nav__toggle`, `.cm-mobile-nav__panel`, `.cm-mobile-nav__item` |
 | Market header | `.cm-market-header`, `.cm-market-header__identity`, `.cm-market-header__metrics` |
 | Overview route | `.cm-overview-page`, `.cm-overview-page__main`, `.cm-overview-page__aside` |
 | Analyze route | `.cm-page--analyze` |

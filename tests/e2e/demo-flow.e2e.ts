@@ -450,8 +450,20 @@ async function assertEveryTraceRowVisible(page: Page, label: string) {
  * The workspace must be navigable at every width. The previous rail was
  * `hidden lg:flex` and was the only navigation in the app, which left phones and
  * tablets with zero reachable links — a page could only be opened by typing a URL.
+ *
+ * Below 640px the seven items no longer fit the bar (they need 508px of a 250px
+ * one), so they move behind a disclosure button. Reachable-in-two-taps still
+ * counts as navigable; reachable-only-by-URL does not. So the check opens the
+ * menu first where one exists, and still demands all seven afterwards.
  */
 async function assertNavigable(page: Page, label: string, expectedActive: string | null) {
+  const toggle = page.locator("[data-mobile-nav-toggle]");
+
+  if ((await toggle.count()) > 0 && (await toggle.first().isVisible())) {
+    await toggle.first().click();
+    await page.locator("[data-mobile-nav-panel]").waitFor({ timeout: 5_000 });
+  }
+
   const nav = await page.evaluate(() => {
     const links = [...document.querySelectorAll<HTMLAnchorElement>("[data-nav-item]")].filter(
       (link) => link.getBoundingClientRect().width > 0,
@@ -462,6 +474,13 @@ async function assertNavigable(page: Page, label: string, expectedActive: string
       active: links.filter((link) => link.dataset.navActive !== undefined).map((link) => link.dataset.navItem),
     };
   });
+
+  // Leave the page as it was found, so the responsive captures that follow show
+  // the screen rather than an open menu covering it.
+  if (await page.locator("[data-mobile-nav-panel]").count()) {
+    await page.keyboard.press("Escape");
+    await page.locator("[data-mobile-nav-panel]").waitFor({ state: "detached", timeout: 5_000 });
+  }
 
   assert(nav.count >= 7, `${label} shows only ${nav.count} navigation links; every workspace screen must be reachable`);
 

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import { Menu, X } from "lucide-react";
 
 export const appNavItems = [
   { label: "Overview", href: "/app" },
@@ -16,6 +17,9 @@ export const appNavItems = [
 ];
 
 const settingsItem = { label: "Settings", href: "/app/settings" };
+
+/** Settings is listed last but is not special: one list keeps the row and the mobile panel in step. */
+const allNavItems = [...appNavItems, settingsItem];
 
 /**
  * Plain text navigation. An earlier pass boxed every item and numbered them 01-06,
@@ -79,25 +83,142 @@ export function AppNav() {
   }, []);
 
   return (
-    <nav
-      aria-label="Workspace"
-      className="cm-app-nav relative flex w-full items-center justify-start gap-7 overflow-x-auto sm:justify-center"
-      data-app-nav
-      onMouseLeave={() => moveIndicator(null)}
-      ref={navRef}
-    >
-      <span
-        aria-hidden
-        className="cm-app-nav__hover-indicator pointer-events-none absolute bottom-0 left-0 h-0.5 w-0 bg-foreground/35 opacity-0"
-        ref={indicatorRef}
-      />
+    <>
+      <nav
+        aria-label="Workspace"
+        className="cm-app-nav relative hidden w-full items-center justify-start gap-7 overflow-x-auto md:flex md:justify-center"
+        data-app-nav
+        onMouseLeave={() => moveIndicator(null)}
+        ref={navRef}
+      >
+        <span
+          aria-hidden
+          className="cm-app-nav__hover-indicator pointer-events-none absolute bottom-0 left-0 h-0.5 w-0 bg-foreground/35 opacity-0"
+          ref={indicatorRef}
+        />
 
-      {appNavItems.map((item) => (
-        <NavItem active={isActive(pathname, item.href)} href={item.href} key={item.href} label={item.label} onHover={moveIndicator} />
-      ))}
+        {allNavItems.map((item) => (
+          <NavItem active={isActive(pathname, item.href)} href={item.href} key={item.href} label={item.label} onHover={moveIndicator} />
+        ))}
+      </nav>
 
-      <NavItem active={isActive(pathname, settingsItem.href)} href={settingsItem.href} label={settingsItem.label} onHover={moveIndicator} />
-    </nav>
+      <MobileNav pathname={pathname} />
+    </>
+  );
+}
+
+/**
+ * The seven items need about 530px of bar. Measured across widths rather than
+ * guessed: at 390px only four of them were on screen, the rest behind a
+ * horizontal scroll nobody would think to try, and 640px fit them only to the
+ * pixel — the last item still clipped by 4px. So the row waits for `md`, where
+ * 530px of items sit in a 658px bar with room to spare, and below that the items
+ * move behind this button instead.
+ */
+function MobileNav({ pathname }: { pathname: string }) {
+  const [open, setOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      if (!open || !panelRef.current) {
+        return;
+      }
+
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        gsap.set(panelRef.current, { opacity: 1, y: 0 });
+        return;
+      }
+
+      gsap.from(panelRef.current, { opacity: 0, y: -8, duration: 0.2, ease: "power2.out" });
+    },
+    { dependencies: [open] },
+  );
+
+  // A menu that cannot be dismissed by the two gestures everyone already tries —
+  // Escape, and a tap outside it — reads as stuck rather than open.
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        buttonRef.current?.focus();
+      }
+    };
+
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+
+      if (!panelRef.current?.contains(target) && !buttonRef.current?.contains(target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [open]);
+
+  return (
+    <div className="cm-mobile-nav flex w-full items-center justify-end md:hidden">
+      <button
+        aria-controls="cm-mobile-nav-panel"
+        aria-expanded={open}
+        aria-label={open ? "Close navigation" : "Open navigation"}
+        className="cm-mobile-nav__toggle flex items-center justify-center border border-border p-2.5 text-muted-foreground transition-colors hover:bg-surface-hover"
+        data-mobile-nav-toggle
+        onClick={() => setOpen((previous) => !previous)}
+        ref={buttonRef}
+        type="button"
+      >
+        {/* Icon only. The `aria-label` above is what carries the name now, so it
+            has to stay: without it the button announces as nothing at all. */}
+        {open ? <X aria-hidden className="size-4" /> : <Menu aria-hidden className="size-4" />}
+      </button>
+
+      {open ? (
+        // Fixed, not absolute: the bar pins at y=20 and is 50px tall, so its
+        // underside is always y=70 — and an absolute child would be clipped by
+        // the row's own `overflow-x-auto`.
+        <div
+          className="cm-mobile-nav__panel fixed inset-x-0 top-[70px] z-50 border-b border-border bg-background"
+          data-mobile-nav-panel
+          id="cm-mobile-nav-panel"
+          ref={panelRef}
+        >
+          <nav aria-label="Workspace" className="cm-mobile-nav__list flex flex-col divide-y divide-border">
+            {allNavItems.map((item) => {
+              const active = isActive(pathname, item.href);
+
+              return (
+                <Link
+                  aria-current={active ? "page" : undefined}
+                  className={`cm-mobile-nav__item flex items-center justify-between px-5 py-4 text-sm transition-colors ${
+                    active ? "font-medium text-foreground" : "text-muted-foreground"
+                  }`}
+                  data-nav-active={active || undefined}
+                  data-nav-item={item.label.toLowerCase()}
+                  href={item.href}
+                  key={item.href}
+                  onClick={() => setOpen(false)}
+                >
+                  {item.label}
+                  {active ? <span aria-hidden className="cm-mobile-nav__active-indicator h-1.5 w-1.5 bg-primary" /> : null}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      ) : null}
+    </div>
   );
 }
 

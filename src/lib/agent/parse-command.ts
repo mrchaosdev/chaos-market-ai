@@ -26,6 +26,19 @@ export function parseSymbols(command: string): string[] {
   return [...new Set(symbols)];
 }
 
+/**
+ * Query strings are hand-editable, and an unsupported one used to be forwarded
+ * to Binance, which answers 403 for a malformed symbol — mapped, reasonably but
+ * wrongly, to `REGION_RESTRICTED`. The screen then told the reader to redeploy
+ * to another region when the actual problem was three characters in the URL.
+ * Unknown symbols now fall back to the default the same way an unknown
+ * `timeframe` already does, and no request is spent finding that out.
+ */
+export function resolveSymbol(value: string | undefined, fallback = "BTCUSDT"): string {
+  const base = (value ?? "").trim().toUpperCase().replace(/USDT$/, "");
+  return supportedBaseAssets.includes(base) ? `${base}USDT` : fallback;
+}
+
 export function normalizeSymbol(value: string): string {
   const upper = value.trim().toUpperCase();
 
