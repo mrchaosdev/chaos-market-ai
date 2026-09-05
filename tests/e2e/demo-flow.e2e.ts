@@ -13,6 +13,7 @@ async function main() {
   const browser = await chromium.launch();
 
   try {
+    await checkSingleShell(browser);
     await checkDemoFlow(browser);
     await checkStreamingTransport(browser);
     await checkScrollbar(browser);
@@ -21,10 +22,47 @@ async function main() {
     await checkMarketPulse(browser);
     await checkReducedMotion(browser);
     await captureResponsiveScreenshots(browser);
-    console.log("e2e: demo flow, streaming, scrollbar, sticky nav, agent sphere, market pulse, reduced motion and responsive capture passed");
+    console.log("e2e: single shell, demo flow, streaming, scrollbar, sticky nav, agent sphere, market pulse, reduced motion and responsive capture passed");
   } finally {
     await browser.close();
   }
+}
+
+/**
+ * Every workspace route must render exactly one shell. The shell used to be
+ * wrapped by each page individually, and when it moved to a shared layout one
+ * page kept its own — so `/app/agent` rendered two navs, two title bands and two
+ * sets of metrics, stacked, on every load. Nothing caught it: the only
+ * navigation assertions ran on the landing page and `/app/analyze`, and a
+ * doubled nav still satisfies "at least seven links".
+ *
+ * So this walks all of them, and counts rather than samples.
+ */
+async function checkSingleShell(browser: Browser) {
+  const routes = ["/app", "/app/analyze", "/app/compare", "/app/entry", "/app/agent", "/app/history", "/app/settings"];
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+
+  for (const route of routes) {
+    await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
+    await page.locator("[data-app-shell]").first().waitFor({ timeout: 60_000 });
+    // The loading fallback streams before the page; wait for it to be replaced
+    // so this counts the settled DOM rather than a legitimate handover.
+    await page.waitForFunction(() => document.querySelectorAll("[data-loading-panel]").length === 0, undefined, { timeout: 60_000 });
+
+    const counts = await page.evaluate(() => ({
+      shells: document.querySelectorAll("[data-app-shell]").length,
+      navs: document.querySelectorAll("[data-sticky-nav]").length,
+      headers: document.querySelectorAll("[data-market-header]").length,
+      active: document.querySelectorAll("[data-nav-item][data-nav-active]").length,
+    }));
+
+    assert(counts.shells === 1, `${route} rendered ${counts.shells} app shells, expected exactly 1`);
+    assert(counts.navs === 1, `${route} rendered ${counts.navs} nav bars, expected exactly 1`);
+    assert(counts.headers === 1, `${route} rendered ${counts.headers} market headers, expected exactly 1`);
+    assert(counts.active === 1, `${route} marks ${counts.active} nav items active, expected exactly 1`);
+  }
+
+  await page.close();
 }
 
 /** `/api/chat` must deliver trace events as they happen, not buffer them into one lump. */
