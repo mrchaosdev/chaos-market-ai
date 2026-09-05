@@ -43,57 +43,63 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="cm-landing-workspace grid flex-1 grid-cols-1 gap-px bg-border sm:pl-[70px] xl:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)]">
-            <section className="cm-landing-workspace__primary bg-background/94 p-5 lg:p-8">
-              <div className="cm-landing-hero grid gap-8 xl:grid-cols-[0.92fr_1fr] xl:items-end">
-                <div className="cm-landing-hero__copy">
-                  <p className="cm-landing-hero__eyebrow font-mono text-xs uppercase tracking-[0.26em] text-primary">Data first / Code second / AI last</p>
-                  {/* Capped at 72px: DESIGN_SYSTEM.md §5 puts the hero at 48-72, and 96px wrapped
-                      this line into nine words stacked down the whole viewport. */}
-                  <h2 className="cm-landing-hero__title mt-6 max-w-3xl text-4xl font-semibold leading-[0.95] tracking-[-0.05em] md:text-6xl xl:text-7xl">
-                    Do not ask AI what BTC is doing.
-                    <span className="cm-landing-hero__title-accent block text-muted-foreground">Make it inspect the market.</span>
-                  </h2>
-                </div>
+          {/* The gutter padding and the `bg-border` gap fill have to sit on separate
+              elements: a background paints the padding box too, so combining them
+              filled the 70px scrollbar gutter with border colour. The header above
+              already splits them this way. */}
+          <div className="cm-landing-workspace flex flex-1 flex-col sm:pl-[70px]">
+            <div className="cm-landing-workspace__grid grid flex-1 grid-cols-1 gap-px bg-border xl:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)]">
+              <section className="cm-landing-workspace__primary bg-background/94 p-5 lg:p-8">
+                <div className="cm-landing-hero grid gap-8 xl:grid-cols-[0.92fr_1fr] xl:items-end">
+                  <div className="cm-landing-hero__copy">
+                    <p className="cm-landing-hero__eyebrow font-mono text-xs uppercase tracking-[0.26em] text-primary">Data first / Code second / AI last</p>
+                    {/* Capped at 72px: DESIGN_SYSTEM.md §5 puts the hero at 48-72, and 96px wrapped
+                        this line into nine words stacked down the whole viewport. */}
+                    <h2 className="cm-landing-hero__title mt-6 max-w-3xl text-4xl font-semibold leading-[0.95] tracking-[-0.05em] md:text-6xl xl:text-7xl">
+                      Do not ask AI what BTC is doing.
+                      <span className="cm-landing-hero__title-accent block text-muted-foreground">Make it inspect the market.</span>
+                    </h2>
+                  </div>
 
-                <ChaosTerminalSurface>
-                  <div className="cm-execution-path grid gap-px bg-border p-px">
-                    <div className="cm-execution-path__body bg-background p-5">
-                      <p className="cm-execution-path__title font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Execution Path</p>
-                      <div className="cm-execution-path__steps mt-6 grid grid-cols-[86px_1fr] gap-y-4 font-mono text-xs">
-                        <span className="text-subtle-foreground">01</span><span>BINANCE MARKET DATA</span>
-                        <span className="text-subtle-foreground">02</span><span>EMA / RSI / ATR ENGINE</span>
-                        <span className="text-subtle-foreground">03</span><span>SIGNAL ALIGNMENT</span>
-                        <span className="text-subtle-foreground">04</span><span>EVIDENCE-FIRST INTERPRETATION</span>
+                  <ChaosTerminalSurface>
+                    <div className="cm-execution-path grid gap-px bg-border p-px">
+                      <div className="cm-execution-path__body bg-background p-5">
+                        <p className="cm-execution-path__title font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Execution Path</p>
+                        <div className="cm-execution-path__steps mt-6 grid grid-cols-[86px_1fr] gap-y-4 font-mono text-xs">
+                          <span className="text-subtle-foreground">01</span><span>BINANCE MARKET DATA</span>
+                          <span className="text-subtle-foreground">02</span><span>EMA / RSI / ATR ENGINE</span>
+                          <span className="text-subtle-foreground">03</span><span>SIGNAL ALIGNMENT</span>
+                          <span className="text-subtle-foreground">04</span><span>EVIDENCE-FIRST INTERPRETATION</span>
+                        </div>
+                      </div>
+                      <div className="cm-execution-path__actions grid grid-cols-2 gap-px bg-border">
+                        <a className="cm-execution-path__run bg-primary px-5 py-4 text-sm font-medium text-primary-foreground" href="/app/agent">Run Analysis</a>
+                        <a className="cm-execution-path__inspect bg-surface px-5 py-4 text-sm font-medium text-foreground" href="/app/analyze">Inspect Evidence</a>
                       </div>
                     </div>
-                    <div className="cm-execution-path__actions grid grid-cols-2 gap-px bg-border">
-                      <a className="cm-execution-path__run bg-primary px-5 py-4 text-sm font-medium text-primary-foreground" href="/app/agent">Run Analysis</a>
-                      <a className="cm-execution-path__inspect bg-surface px-5 py-4 text-sm font-medium text-foreground" href="/app/analyze">Inspect Evidence</a>
-                    </div>
-                  </div>
-                </ChaosTerminalSurface>
-              </div>
-
-              <div className="cm-landing-product mt-12" id="product">
-                {result ? <MarketAnalysisPanel analysis={result} /> : null}
-                {error ? <ChaosDomainError error={error} /> : null}
-              </div>
-            </section>
-
-            <section className="cm-landing-workspace__aside bg-surface p-5 lg:p-8">
-              {result ? (
-                <div className="cm-landing-workspace__pulse mb-8">
-                  <MarketPulse
-                    signalScore={result.signal.score}
-                    trend={result.structure.trend}
-                    volatility={result.structure.volatility}
-                    volume={result.structure.volume}
-                  />
+                  </ChaosTerminalSurface>
                 </div>
-              ) : null}
-              <AgentTrace events={result?.trace ?? []} isRunning={false} runId={result?.runId ?? null} />
-            </section>
+
+                <div className="cm-landing-product mt-12" id="product">
+                  {result ? <MarketAnalysisPanel analysis={result} /> : null}
+                  {error ? <ChaosDomainError error={error} /> : null}
+                </div>
+              </section>
+
+              <section className="cm-landing-workspace__aside bg-surface p-5 lg:p-8">
+                {result ? (
+                  <div className="cm-landing-workspace__pulse mb-8">
+                    <MarketPulse
+                      signalScore={result.signal.score}
+                      trend={result.structure.trend}
+                      volatility={result.structure.volatility}
+                      volume={result.structure.volume}
+                    />
+                  </div>
+                ) : null}
+                <AgentTrace events={result?.trace ?? []} isRunning={false} runId={result?.runId ?? null} />
+              </section>
+            </div>
           </div>
         </section>
       </div>
