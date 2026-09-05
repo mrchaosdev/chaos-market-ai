@@ -19,10 +19,11 @@ export function ChaosLoadingPanel({ label = "Fetching live market data" }: Chaos
   return (
     <div aria-busy="true" aria-live="polite" className="cm-loading-panel border border-border bg-background p-8" data-loading-panel role="status">
       <div className="cm-loading-panel__row flex items-center gap-3 font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground">
-        <span aria-hidden className="cm-loading-panel__dots flex items-center gap-1">
-          <span className="cm-loading-panel__dot size-1.5 rounded-full bg-primary" />
-          <span className="cm-loading-panel__dot size-1.5 rounded-full bg-primary" />
-          <span className="cm-loading-panel__dot size-1.5 rounded-full bg-primary" />
+        <span aria-hidden className="cm-loading-panel__bars flex h-4 items-end gap-[3px]">
+          <span className="cm-loading-panel__bar h-full w-[3px] rounded-full bg-primary" />
+          <span className="cm-loading-panel__bar h-full w-[3px] rounded-full bg-primary" />
+          <span className="cm-loading-panel__bar h-full w-[3px] rounded-full bg-primary" />
+          <span className="cm-loading-panel__bar h-full w-[3px] rounded-full bg-primary" />
         </span>
         {label}
       </div>

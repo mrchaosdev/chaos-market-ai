@@ -49,7 +49,7 @@ State and variant modifiers may be generated from component props. Examples:
 | Market chart | `.cm-market-chart`, `.cm-market-chart__legend`, `.cm-market-chart__canvas` |
 | Market watch | `.cm-market-watch`, `.cm-market-watch__row` |
 | Symbol picker | `.cm-symbol-picker`, `.cm-symbol-picker__item`, `.cm-symbol-picker__item--disabled` |
-| Loading panel | `.cm-loading-panel`, `.cm-loading-panel__dots` |
+| Loading panel | `.cm-loading-panel`, `.cm-loading-panel__bars`, `.cm-loading-panel__bar` |
 | Token icon | `.cm-token-icon`, `.cm-token-icon--fallback` |
 | Workflow metadata | `.cm-workflow-meta`, `.cm-workflow-meta__item`, `.cm-workflow-meta__run-id` |
 
