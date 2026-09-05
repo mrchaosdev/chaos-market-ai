@@ -6,6 +6,29 @@ The agent routes a command into a deterministic workflow, retrieves live Binance
 
 **V1 is read-only.** No trading API keys, no order routes, no execution.
 
+> **Binance Agent OS Mini Hackathon — Track A.** Track B pays more but requires placing trades, which contradicts the read-only law this project is built on, so Track A was chosen deliberately rather than by default. Live demo: _add URL once deployed._
+
+![The agent screen after a real run: deterministic evidence on the right, the agent's own vitals on the left](docs/screenshot-agent-output.png)
+
+Every number on that screen was computed in code before the interpretation layer
+was called. That layer receives those numbers as context and explains them; it
+never calculates, and a numeric guard rejects any figure it introduces that is
+not in the supplied context.
+
+The meta bar names whichever provider actually produced the prose — in this
+capture, `LOCAL · CHAOS-DETERMINISTIC`, because no cloud key was configured for
+it. That is the designed behaviour, not a broken screenshot: with `AI_API_KEY`
+set the bar reads the real provider and model, and if that provider fails or is
+rate-limited mid-run the app degrades to the deterministic interpretation, says
+so in the meta bar, and records the reason in the trace. The measurements are
+identical either way, because the model never produced them.
+
+Behind the **Execution** tab is the trace of what actually ran — four Binance
+calls, the indicator engine, market structure, the signal engine, interpretation —
+each with its real latency and outcome, including failures:
+
+![The execution trace: every real step with its latency and status](docs/screenshot-agent-trace.png)
+
 ---
 
 ## Quick start
@@ -120,6 +143,8 @@ Anything outside those four workflows returns `COMMAND NOT ROUTED` with suggesti
 ---
 
 ## Demo flow
+
+![The landing page, running a real BTC 4H analysis on load rather than showing a mockup](docs/screenshot-landing.png)
 
 The full recording script is in [`docs/DEMO.md`](docs/DEMO.md).
 

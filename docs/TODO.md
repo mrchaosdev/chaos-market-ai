@@ -224,7 +224,8 @@
 - [ ] Record video: landing → agent → trace → evidence.
 - [ ] Deploy to Vercel. *(Owner is handling deployment. `vercel.json` pins `fra1` — the default `iad1` is a US region and Binance blocks it. Confirm with `/api/health` before recording.)*
 - [ ] Verify production env vars.
-- [ ] Add final GitHub README.
+- [x] Add final GitHub README. *(Opened with what a judge needs in the first screen: the Track A choice and why Track B was refused, three captures of the real running app — agent output, execution trace, landing — and a placeholder for the demo URL. The hero caption states plainly that the meta bar in the capture reads `LOCAL · CHAOS-DETERMINISTIC` and why that is the designed degradation rather than a broken screenshot, since the alternative was a caption that contradicts its own image.)*
+- [x] Audit `ACCEPTANCE.md` against the working tree. *(It was 0/51 ticked, which reads as never self-checked when in fact almost all of it held. Each box was verified by reading the code, running the named test, or measuring the app — 50 now ticked with the evidence noted inline. §6.5 "Missing-data eval returns reliability warning" is deliberately left unticked: there is no reliability-warning concept in the code, and missing data instead takes two harder paths — an `ANALYTICS_ERROR` domain error for insufficient history, `n/a` for an individual uncomputable indicator. Reinterpreting the wording to fit what was built would have made the page complete and the audit worthless.)*
 - [ ] Submit GitHub URL.
 - [ ] Submit demo URL/video.
 - [ ] Complete Binance survey.
