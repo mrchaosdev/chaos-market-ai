@@ -1,6 +1,14 @@
 import type { Timeframe } from "@/lib/market/types";
 
-export const supportedBaseAssets = ["BTC", "ETH", "BNB", "SOL", "XRP", "DOGE", "ADA", "AVAX", "LINK", "TON"];
+/**
+ * Every entry must be listed on Binance USDT-M futures, which is the only market
+ * this app reads. `TON` was on this list and is not listed there: the ticker
+ * endpoint answers HTTP 200 with `{}`, the schema rejects the empty shape, and
+ * every TON command and every click on its picker chip failed with
+ * `MARKET_DATA_ERROR`. `tests/market/supported-assets.test.ts` now checks the
+ * list against the exchange so the next one is caught before a user finds it.
+ */
+export const supportedBaseAssets = ["BTC", "ETH", "BNB", "SOL", "XRP", "DOGE", "ADA", "AVAX", "LINK"];
 
 export const defaultTimeframe: Timeframe = "4h";
 

@@ -127,9 +127,9 @@ Commands are routed at `/app/agent` by keyword, not by a language model — the 
 
 Rules are evaluated in that order, so `Compare BTC entry area` compares — `compare` is tested before `entry`.
 
-Symbols are read from the command against a ten-asset allowlist (BTC, ETH, BNB, SOL, XRP, DOGE, ADA, AVAX, LINK, TON), and timeframes from `15m`, `1h`, `4h`, `1d` (also `hourly`, `daily`, `24h`). Anything unstated falls back: BTC on 4H for a single asset, BTC and ETH for a comparison; the market overview is always BTC / ETH / BNB. An unsupported symbol falls back the same way rather than being forwarded to the exchange, which answers 403 for a malformed one — an error that would otherwise surface as a region block.
+Symbols are read from the command against a nine-asset allowlist (BTC, ETH, BNB, SOL, XRP, DOGE, ADA, AVAX, LINK), and timeframes from `15m`, `1h`, `4h`, `1d` (also `hourly`, `daily`, `24h`). Anything unstated falls back: BTC on 4H for a single asset, BTC and ETH for a comparison; the market overview is always BTC / ETH / BNB. An unsupported symbol falls back the same way rather than being forwarded to the exchange, which answers 403 for a malformed one — an error that would otherwise surface as a region block.
 
-The same ten assets appear as a picker on `/app/analyze`, `/app/compare` and `/app/entry`, so the workflows are reachable without typing a command. It is driven by the router's own allowlist, so the two cannot drift apart.
+The same nine assets appear as a picker on `/app/analyze`, `/app/compare` and `/app/entry`, so the workflows are reachable without typing a command. It is driven by the router's own allowlist, so the two cannot drift apart.
 
 ```text
 Analyze SOL on 1d
@@ -156,7 +156,7 @@ to run before rolling — is in [`docs/DEMO.md`](docs/DEMO.md).
 4. Read the result right to left: evidence and deterministic metrics first, model prose last.
 5. Try `Compare BTC and ETH on 4H`, `Is BTC near a good entry area?`, and `How is the market today?`.
 6. Send something unrelated — the agent answers `COMMAND NOT ROUTED` instead of falling back to a chatbot.
-7. Open `/app/analyze` and switch assets with the picker: the same pipeline, ten assets, no typing.
+7. Open `/app/analyze` and switch assets with the picker: the same pipeline, nine assets, no typing.
 
 ---
 

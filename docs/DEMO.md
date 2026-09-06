@@ -123,7 +123,7 @@ its own failure path beats a fourth take that got lucky.
 
 `[CUT FIRST]` **Do:** open `/app/analyze`, click **ETH**, then **SOL**.
 
-> Ten assets, and the picker is the router's own allowlist — the same list the
+> Nine assets, and the picker is the router's own allowlist — the same list the
 > typed commands accept. Every one runs the identical pipeline.
 
 ---
