@@ -15,13 +15,12 @@ was called. That layer receives those numbers as context and explains them; it
 never calculates, and a numeric guard rejects any figure it introduces that is
 not in the supplied context.
 
-The meta bar names whichever provider actually produced the prose — in this
-capture, `LOCAL · CHAOS-DETERMINISTIC`, because no cloud key was configured for
-it. That is the designed behaviour, not a broken screenshot: with `AI_API_KEY`
-set the bar reads the real provider and model, and if that provider fails or is
-rate-limited mid-run the app degrades to the deterministic interpretation, says
-so in the meta bar, and records the reason in the trace. The measurements are
-identical either way, because the model never produced them.
+The meta bar names whichever provider actually produced the prose — above,
+`GEMINI · GEMINI-3.6-FLASH`. Without `AI_API_KEY`, or when the configured
+provider errors or is rate-limited mid-run, it reads `LOCAL ·
+CHAOS-DETERMINISTIC` instead, and the trace carries the provider's own error as
+the reason. The measurements are identical either way, because the model never
+produced them.
 
 Behind the **Execution** tab is the trace of what actually ran — four Binance
 calls, the indicator engine, market structure, the signal engine, interpretation —
@@ -128,7 +127,9 @@ Commands are routed at `/app/agent` by keyword, not by a language model — the 
 
 Rules are evaluated in that order, so `Compare BTC entry area` compares — `compare` is tested before `entry`.
 
-Symbols are read from the command against a ten-asset allowlist (BTC, ETH, BNB, SOL, XRP, DOGE, ADA, AVAX, LINK, TON), and timeframes from `15m`, `1h`, `4h`, `1d` (also `hourly`, `daily`, `24h`). Anything unstated falls back: BTC on 4H for a single asset, BTC and ETH for a comparison; the market overview is always BTC / ETH / BNB.
+Symbols are read from the command against a ten-asset allowlist (BTC, ETH, BNB, SOL, XRP, DOGE, ADA, AVAX, LINK, TON), and timeframes from `15m`, `1h`, `4h`, `1d` (also `hourly`, `daily`, `24h`). Anything unstated falls back: BTC on 4H for a single asset, BTC and ETH for a comparison; the market overview is always BTC / ETH / BNB. An unsupported symbol falls back the same way rather than being forwarded to the exchange, which answers 403 for a malformed one — an error that would otherwise surface as a region block.
+
+The same ten assets appear as a picker on `/app/analyze`, `/app/compare` and `/app/entry`, so the workflows are reachable without typing a command. It is driven by the router's own allowlist, so the two cannot drift apart.
 
 ```text
 Analyze SOL on 1d
@@ -146,14 +147,16 @@ Anything outside those four workflows returns `COMMAND NOT ROUTED` with suggesti
 
 ![The landing page, running a real BTC 4H analysis on load rather than showing a mockup](docs/screenshot-landing.png)
 
-The full recording script is in [`docs/DEMO.md`](docs/DEMO.md).
+The submission video script — beat by beat, with the lines to say and the checks
+to run before rolling — is in [`docs/DEMO.md`](docs/DEMO.md).
 
 1. Open `/` — the landing page runs a real `Analyze BTC 4H` workflow and shows its actual trace.
 2. Click **Run Analysis** to reach `/app/agent`.
-3. Send `Analyze BTC on 4H`. The trace streams in per real executed step: four Binance tool calls, the indicator engine, market structure, signal engine, interpretation, persistence.
+3. Send `Analyze BTC on 4H`. The result panel opens on **Execution** while the run is in flight and switches to **Output** when it lands. The trace streams one row per real executed step: four Binance tool calls, the indicator engine, market structure, signal engine, interpretation, persistence — each with its own latency.
 4. Read the result right to left: evidence and deterministic metrics first, model prose last.
 5. Try `Compare BTC and ETH on 4H`, `Is BTC near a good entry area?`, and `How is the market today?`.
 6. Send something unrelated — the agent answers `COMMAND NOT ROUTED` instead of falling back to a chatbot.
+7. Open `/app/analyze` and switch assets with the picker: the same pipeline, ten assets, no typing.
 
 ---
 
